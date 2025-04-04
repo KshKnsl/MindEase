@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import qrcode from 'qrcode-terminal';
 import * as os from 'node:os';
+import path from 'path';
 
 function getLocalIP() {
   const interfaces = os.networkInterfaces();
@@ -83,6 +84,11 @@ export default defineConfig({
     }),
     qrCodePlugin()
   ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
+  },
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
