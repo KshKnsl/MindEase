@@ -2,9 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs'; // Use bcryptjs instead of bcrypt
 import jwt from 'jsonwebtoken';
 import { User } from './models/User.js';
+import { router as authRoutes } from './routes/auth.js';
 
 dotenv.config(); // Load environment variables
 
@@ -18,28 +19,8 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-// Authentication Routes
-app.post('/api/auth/register', async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ error: 'Email already registered' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = new User({ name, email, password: hashedPassword });
-        await user.save();
-
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '24h' });
-
-        res.status(201).json({ token });
-    } catch (error) {
-        res.status(500).json({ error: 'Error creating user' });
-    }
-});
+// Routes
+app.use('/api/auth', authRoutes);
 
 // Middleware to verify JWT
 const auth = async (req, res, next) => {
