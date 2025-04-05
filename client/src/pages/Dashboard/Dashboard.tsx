@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, BarChart3, Book, Users } from 'lucide-react';
 import AIChat from './components/AIChat';
+import JournelEntry from './components/JournalEntry';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('ai');
