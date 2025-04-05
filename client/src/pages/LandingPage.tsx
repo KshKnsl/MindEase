@@ -213,7 +213,7 @@ export default function LandingPage() {
           >
             <div className="aspect-video rounded-xl overflow-hidden shadow-2xl border border-purple-100">
               <img 
-                src="/placeholder.svg?height=720&width=1280" 
+                src="/icons/Home.png?height=720&width=1280" 
                 alt="MindEase in action" 
                 className="w-full h-full object-cover"
               />
