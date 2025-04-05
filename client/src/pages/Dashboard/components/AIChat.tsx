@@ -20,8 +20,10 @@ export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", text: "How are you feeling today?", sender: "ai" },
   ]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [currentText, setCurrentText] = useState(""); // Removed unused state variable 'currentText'
   
-  const [currentText, setCurrentText] = useState("");
+  
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState(true);
@@ -183,6 +185,7 @@ export default function AIChat() {
   };
 
   const sendUserMessage = async (text: string) => {
+    console.log('Sending user message:', text);
     if (!text.trim()) return;
 
     const newMessage = {
@@ -210,7 +213,7 @@ export default function AIChat() {
 
     try {
       console.log('Sending message:', text);
-      const res = await fetch('http:/localhost:5000/api/response/chat', {
+      const res = await fetch('http://localhost:5000/api/response/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,6 +226,13 @@ export default function AIChat() {
         throw new Error(`Error: ${res.status}`);
       }
 
+      const data = await res.json();
+      console.log('Response data:', data);
+      const aiResponse = {
+        id: (Date.now() + 1).toString(),
+        text: data || "I'm sorry, I couldn't generate a response.",
+        sender: "ai" as const,
+      };
       const reader = res.body?.getReader();
       let fullResponse = '';
       
@@ -283,7 +293,11 @@ export default function AIChat() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    sendUserMessage(userInput);
+    if (userInput.trim()) {
+      sendUserMessage(userInput);
+    } else {
+      console.error("Cannot send an empty message.");
+    }
   };
 
   return (
