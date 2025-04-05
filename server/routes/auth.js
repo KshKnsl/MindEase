@@ -1,11 +1,10 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User.js'; // Ensure this is correct
+import { User } from '../models/User.js';
 
 export const router = express.Router();
 
-// Register route
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
