@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Brain, User, Bot, Send, Repeat } from "lucide-react";
+import { Mic, MicOff, Brain, User, Bot, Send } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import VoiceWaveAnimation from "./voice-wave-animation";
 import ReactMarkdown from "react-markdown";
@@ -11,12 +11,12 @@ interface Message {
   text: string;
   sender: "user" | "ai";
   isLoading?: boolean;
+  hasBeenPlayed?: boolean; // New property to track if message has been auto-played
 }
 
 export default function AIChat() {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [inText, setInText] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", text: "How are you feeling today?", sender: "ai" },
   ]);
@@ -125,14 +125,20 @@ export default function AIChat() {
       setMessages(prev => prev.filter(m => m.id !== thinkingMessageId));
       
       const aiResponseId = (Date.now() + 2).toString();
+      
+      // Make sure response text is a string
+      const responseText = typeof data === 'string' 
+        ? data 
+        : typeof data === 'object' && data !== null && 'response' in data
+          ? String(data.response) 
+          : "I couldn't generate a response.";
+          
       setMessages(prev => [...prev, { 
         id: aiResponseId, 
-        text: '', 
-        sender: "ai"
+        text: responseText, 
+        sender: "ai",
+        hasBeenPlayed: false // Mark as not played yet
       }]);
-        setMessages(prev => prev.map(m => 
-          m.id === aiResponseId ? { ...m, text: data || "I couldn't generate a response." } : m
-        ));
 
     } catch (error) {
       console.error('Error:', error);
@@ -203,13 +209,36 @@ export default function AIChat() {
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                        <ReactMarkdown>{message.text}</ReactMarkdown>
+                  {typeof message.text === 'string' ? (
+                    <ReactMarkdown>{message.text}</ReactMarkdown>
+                  ) : (
+                    <p>Error: Could not display message</p>
+                  )}
                   {message.isLoading && (
                     <span className="ml-1 inline-block animate-pulse">Thinking...▋</span>
                   )}
-                  {message.sender === "ai" && !message.isLoading && message?.text?.trim() && (
+                  {message.sender === "ai" && 
+                   !message.isLoading && 
+                   message?.text && 
+                   typeof message.text === 'string' && 
+                   message.text.trim() && (
                     <div className="mt-2">
-                      <Testing text={message.text}/>
+                      <Testing 
+                        text={message.text}
+                        autoPlay={!message.hasBeenPlayed} // Auto-play if not played before
+                        onPlayed={() => {
+                          // Mark message as played after auto-play
+                          if (!message.hasBeenPlayed) {
+                            setMessages(prev => 
+                              prev.map(msg => 
+                                msg.id === message.id 
+                                  ? { ...msg, hasBeenPlayed: true } 
+                                  : msg
+                              )
+                            );
+                          }
+                        }}
+                      />
                     </div>
                   )}
                 </div>
