@@ -36,7 +36,6 @@ app.post("/api/genai/ask", async (req, res) => {
             }
         }
 
-        // Combine the MindEase role with user context
         const contextWithProfile = userContext
             ? `${YesOrNo}\n\n${userContext}`
             : YesOrNo;
@@ -55,47 +54,47 @@ app.post("/api/genai/ask", async (req, res) => {
         // Check if the response is "yes"
         if (text.trim().toLowerCase() === "yes") {
             const analysisResult = await model.generateContent({
-                contents: [
+            contents: [
+                {
+                role: "user",
+                parts: [
                     {
-                        role: "user",
-                        parts: [
-                            {
-                                text: "Analyze the following prompt and extract the event details: title, details, location, startDate, endDate. If any field is not determinable, leave it blank.",
-                            },
-                            { text: prompt },
-                        ],
+                    text: "Analyze the following prompt and extract the event details: title, details, location, startDate, endDate. If any field is not determinable, leave it blank.",
                     },
+                    { text: prompt },
                 ],
+                },
+            ],
             });
 
             const analysisText = analysisResult.response.text();
             let title = "",
-                details = "",
-                location = "",
-                startDate = "",
-                endDate = "";
+            details = "",
+            location = "",
+            startDate = "",
+            endDate = "";
 
             // Extract the details from the analysis response
             try {
-                const parsed = JSON.parse(analysisText);
-                title = parsed.title || "";
-                details = parsed.details || "";
-                location = parsed.location || "";
-                startDate = parsed.startDate || "";
-                endDate = parsed.endDate || "";
+            const parsed = JSON.parse(analysisText);
+            title = parsed.title || "";
+            details = parsed.details || "";
+            location = parsed.location || "";
+            startDate = parsed.startDate || "";
+            endDate = parsed.endDate || "";
             } catch (error) {
-                console.error("Error parsing analysis response:", error.message);
+            console.error("Error parsing analysis response:", error.message);
             }
 
             const responseData = {
-                response: text,
-                eventDetails: { title, details, location, startDate, endDate },
+            response: text,
+            eventDetails: { title, details, location, startDate, endDate },
             };
 
             const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-                title
+            title
             )}&dates=${startDate}/${endDate}&details=${encodeURIComponent(
-                details
+            details
             )}&location=${encodeURIComponent(location)}&sf=true&output=xml`;
 
             res.json({ response: text, calendarUrl: url });
