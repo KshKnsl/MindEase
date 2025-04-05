@@ -1,0 +1,11 @@
+document.getElementById('addEvent').addEventListener('click', function () {
+    const title = "My Awesome Event";
+    const details = "This is a description of the event.";
+    const location = "Online";
+    const startDate = "20250405T090000Z"; // UTC time
+    const endDate = "20250405T100000Z";
+
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}&sf=true&output=xml`;
+
+    window.open(url, '_blank');
+  });
