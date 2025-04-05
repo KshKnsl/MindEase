@@ -13,7 +13,7 @@ const Dashboard = () => {
     // Fetch user data
     const fetchUserData = async () => {
       try {
-        const response = await fetch('/api/user/data');
+        const response = await fetch('http://localhost:5000/api/user/data');
         const data = await response.json();
         setUserData(data);
       } catch (error) {
