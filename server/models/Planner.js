@@ -1,12 +1,13 @@
+import express from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Enhanced Gemini AI implementation for MindEase
+const router = express.Router();
+
 const apikey = process.env.GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(apikey);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-// Define the system prompt content for MindEase AI assistant
-const YesOrNo = `Just tell me "yes" or "no" to the question: Is the user trying to lose weight? Is the user trying to schedule some task? You will only respond in "yes" or "no".`;
+const YesOrNo = `Just tell me "yes" or "no" to the question: Is the user trying to schedule some task? You will only respond in "yes" or "no".`;
 app.post("/api/genai/ask", async (req, res) => {
     try {
         const { prompt, conversationHistory = [], saveQuestion = false } = req.body;
@@ -19,7 +20,7 @@ app.post("/api/genai/ask", async (req, res) => {
         let userContext = "";
         if (req.userId) {
             try {
-                const { UserProfile } = await import("./models/UserProfile.js");
+                const { UserProfile } = await import("../models/UserProfile.js");
                 const profile = await UserProfile.findOne({ userId: req.userId });
 
                 if (profile && profile.responses.length > 0) {
@@ -107,9 +108,11 @@ app.post("/api/genai/ask", async (req, res) => {
     }
 });
 
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// Add a simple endpoint to evaluate a "think" and return the result
+router.get("/think", (req, res) => {
+  const result = evaluateThink();
+  res.json({ result });
 });
 
-export default app;
+// Export the router as default
+export default router;
