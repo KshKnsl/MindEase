@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(morgan('dev')); 
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mindease';
-mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 
@@ -26,13 +26,21 @@ app.use('/api/auth', authRoutes);
 const auth = async (req, res, next) => {
     try {
         const token = req.header('Authorization')?.replace('Bearer ', '');
-        if (!token) throw new Error();
+        console.log('Token:', token);
+        if (!token) {
+            return res.status(401).json({ error: 'No token provided. Please authenticate.' });
+        }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-        req.userId = decoded.userId;
+        if (!decoded || !decoded.id) {
+            return res.status(401).json({ error: 'Invalid token. Please authenticate.' });
+        }
+
+        req.userId = decoded.id;
         next();
     } catch (error) {
-        res.status(401).json({ error: 'Please authenticate' });
+        console.error('Token verification error:', error.message);
+        res.status(401).json({ error: 'Invalid or expired token. Please authenticate.' });
     }
 };
 
