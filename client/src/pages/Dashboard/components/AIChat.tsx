@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Brain, User, Bot, Send, Maximize2, Minimize2 } from "lucide-react";
+import { Mic, MicOff, Brain, User, Bot, Send} from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import VoiceWaveAnimation from "./voice-wave-animation";
 
@@ -19,9 +19,7 @@ export default function AIChat() {
   const [isTyping, setIsTyping] = useState(false);
   const [currentText, setCurrentText] = useState("");
   const [userInput, setUserInput] = useState("");
-  const [isFullScreen, setIsFullScreen] = useState(false);
   const recognitionRef = useRef<any>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -109,7 +107,7 @@ export default function AIChat() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-purple-100 h-[400px] max-w-md w-full">
+    <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-purple-100 h-[400px] max-w-screen-2xl w-full">
       <div className="flex items-center justify-between p-3 border-b bg-purple-50">
         <div className="flex items-center space-x-2">
           <Brain className="h-5 w-5 text-purple-600" />
