@@ -16,7 +16,7 @@ const MoodTracker = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/moods', {
+      const response = await fetch('http://localhost:5000/api/moods', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mood: selectedMood, intensity, note })
