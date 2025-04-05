@@ -39,7 +39,7 @@ router.post("/ask", async (req, res) => {
         console.log('AI response for scheduling check:', text);
 
         // Check if the response is "yes"
-        if (text.substring(0, 3).toLowerCase() === "yes") {
+        if (text.substring(0, 3).toLowerCase() === "yes" && prompt.trim().split(/\s+/).length > 1) {
             console.log('Message is about scheduling, extracting event details...');
             
             // Create simple default event details in case extraction fails
