@@ -5,6 +5,7 @@ import LandingPage from './pages/LandingPage';
 import Register from './pages/Auth/Register';
 import Login from './pages/Auth/Login';
 import Dashboard from './pages/Dashboard/Dashboard';
+import Planner from './pages/Planner';
 
 function App() {
   return (
@@ -16,6 +17,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/planner" element={<Planner />} />
+          <Route path="*" element={<LandingPage />} /> {/* Redirect to LandingPage for any unknown routes */}
         </Routes>
       </div>
     </Router>
