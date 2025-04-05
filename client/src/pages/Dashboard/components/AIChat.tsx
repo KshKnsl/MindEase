@@ -4,6 +4,7 @@ import { Mic, MicOff, Brain, User, Bot, Send, Repeat } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import VoiceWaveAnimation from "./voice-wave-animation";
 import ReactMarkdown from "react-markdown";
+import Testing from "./Testing";
 
 interface Message {
   id: string;
@@ -15,6 +16,7 @@ interface Message {
 export default function AIChat() {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [inText, setInText] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", text: "How are you feeling today?", sender: "ai" },
   ]);
@@ -120,9 +122,6 @@ export default function AIChat() {
       const data = await res.json();
       console.log('Response:', data);
       
-      const reader = res.body?.getReader();
-      console.log('Response reader:', reader);
-      
       setMessages(prev => prev.filter(m => m.id !== thinkingMessageId));
       
       const aiResponseId = (Date.now() + 2).toString();
@@ -131,34 +130,9 @@ export default function AIChat() {
         text: '', 
         sender: "ai"
       }]);
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          
-          if (done) break;
-          
-          const chunk = new TextDecoder().decode(value);
-          try {
-            const chunkData = JSON.parse(chunk);
-            fullResponse += chunkData.response || '';
-            
-            setMessages(prev => prev.map(m => 
-              m.id === aiResponseId ? { ...m, text: fullResponse } : m
-            ));
-          } catch (e) {
-            fullResponse += chunk;
-            setMessages(prev => prev.map(m => 
-              m.id === aiResponseId ? { ...m, text: fullResponse } : m
-            ));
-          }
-        }
-      } else {
-        const data = await res.json();
         setMessages(prev => prev.map(m => 
-          m.id === aiResponseId ? { ...m, text: data.response || "I couldn't generate a response." } : m
+          m.id === aiResponseId ? { ...m, text: data || "I couldn't generate a response." } : m
         ));
-      }
 
     } catch (error) {
       console.error('Error:', error);
@@ -233,17 +207,9 @@ export default function AIChat() {
                   {message.isLoading && (
                     <span className="ml-1 inline-block animate-pulse">Thinking...▋</span>
                   )}
-                  {message.sender === "ai" && !message.isLoading && message.text.trim() && (
+                  {message.sender === "ai" && !message.isLoading && message?.text?.trim() && (
                     <div className="mt-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="p-1 h-7 text-xs flex items-center text-purple-600 hover:bg-purple-50"
-                        onClick={() => {}}
-                      >
-                        <Repeat className="h-3 w-3 mr-1" /> Listen
-                      </Button>
+                      <Testing text={message.text}/>
                     </div>
                   )}
                 </div>
