@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, BarChart3, Book, Users } from 'lucide-react';
 import AIChat from './components/AIChat';
