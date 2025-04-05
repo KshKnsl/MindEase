@@ -10,6 +10,7 @@ import { router as questionRoutes } from './routes/questions.js';
 import {router as responseRoutes} from './routes/Response.js';
 import { userRouter } from './routes/user.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import plannerRouter from './models/Planner.js';
 
 dotenv.config(); 
 
@@ -53,6 +54,7 @@ app.use('/api/response', (req, res, next) => {
     console.log('Response route hit');
     next();
 }, responseRoutes);
+app.use('/api/planner', plannerRouter);
 app.get('/api/user/data', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');

@@ -1,12 +1,13 @@
+import express from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Enhanced Gemini AI implementation for MindEase
+const router = express.Router();
+
 const apikey = process.env.GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(apikey);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-// Define the system prompt content for MindEase AI assistant
-const YesOrNo = `Just tell me "yes" or "no" to the question: Is the user trying to lose weight? Is the user trying to schedule some task? You will only respond in "yes" or "no".`;
+const YesOrNo = `Just tell me "yes" or "no" to the question: Is the user trying to schedule some task? You will only respond in "yes" or "no".`;
 app.post("/api/genai/ask", async (req, res) => {
     try {
         const { prompt, conversationHistory = [], saveQuestion = false } = req.body;
@@ -19,7 +20,7 @@ app.post("/api/genai/ask", async (req, res) => {
         let userContext = "";
         if (req.userId) {
             try {
-                const { UserProfile } = await import("./models/UserProfile.js");
+                const { UserProfile } = await import("../models/UserProfile.js");
                 const profile = await UserProfile.findOne({ userId: req.userId });
 
                 if (profile && profile.responses.length > 0) {
@@ -35,7 +36,6 @@ app.post("/api/genai/ask", async (req, res) => {
             }
         }
 
-        // Combine the MindEase role with user context
         const contextWithProfile = userContext
             ? `${YesOrNo}\n\n${userContext}`
             : YesOrNo;
@@ -54,47 +54,47 @@ app.post("/api/genai/ask", async (req, res) => {
         // Check if the response is "yes"
         if (text.trim().toLowerCase() === "yes") {
             const analysisResult = await model.generateContent({
-                contents: [
+            contents: [
+                {
+                role: "user",
+                parts: [
                     {
-                        role: "user",
-                        parts: [
-                            {
-                                text: "Analyze the following prompt and extract the event details: title, details, location, startDate, endDate. If any field is not determinable, leave it blank.",
-                            },
-                            { text: prompt },
-                        ],
+                    text: "Analyze the following prompt and extract the event details: title, details, location, startDate, endDate. If any field is not determinable, leave it blank.",
                     },
+                    { text: prompt },
                 ],
+                },
+            ],
             });
 
             const analysisText = analysisResult.response.text();
             let title = "",
-                details = "",
-                location = "",
-                startDate = "",
-                endDate = "";
+            details = "",
+            location = "",
+            startDate = "",
+            endDate = "";
 
             // Extract the details from the analysis response
             try {
-                const parsed = JSON.parse(analysisText);
-                title = parsed.title || "";
-                details = parsed.details || "";
-                location = parsed.location || "";
-                startDate = parsed.startDate || "";
-                endDate = parsed.endDate || "";
+            const parsed = JSON.parse(analysisText);
+            title = parsed.title || "";
+            details = parsed.details || "";
+            location = parsed.location || "";
+            startDate = parsed.startDate || "";
+            endDate = parsed.endDate || "";
             } catch (error) {
-                console.error("Error parsing analysis response:", error.message);
+            console.error("Error parsing analysis response:", error.message);
             }
 
             const responseData = {
-                response: text,
-                eventDetails: { title, details, location, startDate, endDate },
+            response: text,
+            eventDetails: { title, details, location, startDate, endDate },
             };
 
             const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-                title
+            title
             )}&dates=${startDate}/${endDate}&details=${encodeURIComponent(
-                details
+            details
             )}&location=${encodeURIComponent(location)}&sf=true&output=xml`;
 
             res.json({ response: text, calendarUrl: url });
@@ -107,9 +107,11 @@ app.post("/api/genai/ask", async (req, res) => {
     }
 });
 
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// Add a simple endpoint to evaluate a "think" and return the result
+router.get("/think", (req, res) => {
+  const result = evaluateThink();
+  res.json({ result });
 });
 
-export default app;
+// Export the router as default
+export default router;
