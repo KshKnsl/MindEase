@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Brain, User, Bot, Send } from "lucide-react";
+import { Mic, MicOff, Brain, User, Bot, Send, Calendar } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import VoiceWaveAnimation from "./voice-wave-animation";
 import ReactMarkdown from "react-markdown";
 import Testing from "./Testing";
+import PlannerPopup from "../../../components/PlannerPopup";
 
 interface Message {
   id: string;
@@ -23,6 +24,9 @@ export default function AIChat() {
   
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPlannerPopup, setShowPlannerPopup] = useState(false);
+  const [planDetails, setPlanDetails] = useState<any>(null);
+  const [calendarUrl, setCalendarUrl] = useState<string | null>(null);
   
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -110,7 +114,50 @@ export default function AIChat() {
     }]);
 
     try {
-      console.log('Sending message:', text);
+      console.log('Checking if message is a plan request');
+      const planCheckRes = await fetch('http://localhost:5000/api/planner/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          prompt: text, 
+          userId: token 
+        }),
+      });
+      console.log('Plan check response status:', planCheckRes);
+      if (!planCheckRes.ok) {
+        console.error(`Error checking plan: ${planCheckRes.status}`);
+        throw new Error('Plan check failed');
+      }
+
+      const planData = await planCheckRes.json();
+      console.log('Plan check response:', planData);
+      
+      // If the response contains a calendarUrl, it's a planning request
+      if (planData.calendarUrl) {
+        // Remove thinking message
+        setMessages(prev => prev.filter(m => m.id !== thinkingMessageId));
+        
+        // Store calendar data and show planner popup
+        setCalendarUrl(planData.calendarUrl);
+        setPlanDetails(planData.eventDetails || {});
+        setShowPlannerPopup(true);
+        
+        // Add AI confirmation message
+        const aiResponseId = (Date.now() + 2).toString();
+        setMessages(prev => [...prev, { 
+          id: aiResponseId, 
+          text: "I noticed you want to schedule something. Would you like me to add this to your calendar?", 
+          sender: "ai",
+          hasBeenPlayed: false
+        }]);
+        
+        setLoading(false);
+        return;
+      }
+      
+      console.log('Not a planning request, continuing with normal chat');
       const res = await fetch('http://localhost:5000/api/response/chat', {
         method: 'POST',
         headers: {
@@ -120,7 +167,7 @@ export default function AIChat() {
       });
 
       const data = await res.json();
-      console.log('Response:', data);
+      console.log('Chat response:', data);
       
       setMessages(prev => prev.filter(m => m.id !== thinkingMessageId));
       
@@ -152,6 +199,25 @@ export default function AIChat() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClosePlannerPopup = () => {
+    setShowPlannerPopup(false);
+  };
+
+  const handleAddToCalendar = () => {
+    if (calendarUrl) {
+      window.open(calendarUrl, '_blank');
+      
+      // Add confirmation message to chat
+      setMessages((prev) => [...prev, {
+        id: Date.now().toString(),
+        text: "Great! I've opened Google Calendar for you to save this event. Is there anything else you'd like to schedule?",
+        sender: "ai",
+        hasBeenPlayed: false
+      }]);
+    }
+    setShowPlannerPopup(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -248,6 +314,14 @@ export default function AIChat() {
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
+
+      {showPlannerPopup && (
+        <PlannerPopup
+          isOpen={showPlannerPopup}
+          onClose={handleClosePlannerPopup}
+          onAddPlanner={handleAddToCalendar}
+        />
+      )}
 
       <form
         onSubmit={handleSubmit}
