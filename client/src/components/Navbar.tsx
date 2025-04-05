@@ -47,6 +47,16 @@ const Navbar = () => {
             >
               Dashboard
             </Link>
+            <Link 
+              to="/mood-tracker" 
+              className={`font-medium transition-colors ${
+                isActive('/mood-tracker') 
+                  ? 'text-purple-700 border-b-2 border-purple-600' 
+                  : 'text-gray-700 hover:text-purple-600'
+              }`}
+            >
+              Mood Tracker
+            </Link>
             
             {!isLoggedIn ? (
               <>
@@ -103,6 +113,17 @@ const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Dashboard
+            </Link>
+            <Link 
+              to="/mood-tracker" 
+              className={`px-2 py-2 rounded-md ${
+                isActive('/mood-tracker') 
+                  ? 'bg-purple-50 text-purple-700 font-medium' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Mood Tracker
             </Link>
             
             {!isLoggedIn ? (
