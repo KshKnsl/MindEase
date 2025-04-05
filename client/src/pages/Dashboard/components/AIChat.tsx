@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Brain, User, Bot, Send} from "lucide-react";
+import { Mic, MicOff, Brain, User, Bot, Send, Volume2, VolumeX, Repeat } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import VoiceWaveAnimation from "./voice-wave-animation";
+import ReactMarkdown from "react-markdown";
+import { textToSpeech, speakWithBrowserAPI } from "../../../utils/textToSpeech";
 
 interface Message {
   id: string;
   text: string;
   sender: "user" | "ai";
+  isLoading?: boolean;
+  hasBeenSpoken?: boolean;
 }
 
 export default function AIChat() {
@@ -16,11 +20,16 @@ export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", text: "How are you feeling today?", sender: "ai" },
   ]);
-  const [isTyping, setIsTyping] = useState(false);
+  
   const [currentText, setCurrentText] = useState("");
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [textToSpeechEnabled, setTextToSpeechEnabled] = useState(true);
+  const [currentlyPlayingAudio, setCurrentlyPlayingAudio] = useState<HTMLAudioElement | null>(null);
+  
   const recognitionRef = useRef<any>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -60,6 +69,42 @@ export default function AIChat() {
     }
   }, []);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Play speech for new AI messages
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && 
+        lastMessage.sender === 'ai' && 
+        !lastMessage.isLoading && 
+        textToSpeechEnabled && 
+        !lastMessage.hasBeenSpoken) {
+      
+      // Wait for streaming to complete
+      const timeoutId = setTimeout(() => {
+        // Stop any currently playing audio
+        if (currentlyPlayingAudio) {
+          currentlyPlayingAudio.pause();
+          currentlyPlayingAudio.currentTime = 0;
+        }
+
+        if (!lastMessage.text.trim()) return;
+        
+        // Play the message and mark it as spoken
+        playAIMessage(lastMessage.text);
+        
+        // Mark message as spoken
+        setMessages(prev => prev.map(msg => 
+          msg.id === lastMessage.id ? { ...msg, hasBeenSpoken: true } : msg
+        ));
+      }, 500); // Wait 500ms after last update
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [messages, textToSpeechEnabled]);
+
   const toggleListening = () => {
     if (isListening) {
       recognitionRef.current?.stop();
@@ -74,6 +119,69 @@ export default function AIChat() {
     }
   };
 
+  const toggleTextToSpeech = () => {
+    setTextToSpeechEnabled(!textToSpeechEnabled);
+    
+    // Stop current audio if disabling text-to-speech
+    if (textToSpeechEnabled && currentlyPlayingAudio) {
+      currentlyPlayingAudio.pause();
+      currentlyPlayingAudio.currentTime = 0;
+      setCurrentlyPlayingAudio(null);
+      setIsSpeaking(false);
+    }
+  };
+
+  // Extract common speech functionality to a single function
+  const playAIMessage = (text: string) => {
+    // Stop any currently playing audio
+    if (currentlyPlayingAudio) {
+      currentlyPlayingAudio.pause();
+      currentlyPlayingAudio.currentTime = 0;
+    }
+
+    // Don't speak if the message is empty
+    if (!text.trim()) return;
+    
+    try {
+      // Try with Murf AI API first
+      textToSpeech({ 
+        text: text,
+        onError: (error) => {
+          console.error('Failed to use Murf API, falling back to browser TTS', error);
+          speakWithBrowserAPI(text);
+        }
+      }).then(audioUrl => {
+        const audio = new Audio(audioUrl);
+        setCurrentlyPlayingAudio(audio);
+        audioRef.current = audio;
+        
+        audio.onplay = () => setIsSpeaking(true);
+        audio.onended = () => {
+          setIsSpeaking(false);
+          setCurrentlyPlayingAudio(null);
+        };
+        
+        audio.play().catch(err => {
+          console.error('Error playing audio:', err);
+          speakWithBrowserAPI(text);
+        });
+      }).catch(error => {
+        // If Murf API fails, use browser's built-in speech synthesis
+        speakWithBrowserAPI(text);
+      });
+    } catch (error) {
+      console.error('Error with text-to-speech:', error);
+      speakWithBrowserAPI(text);
+    }
+  };
+
+  // Manually trigger speech for a specific message (for the Listen button)
+  const playMessageAudio = (text: string) => {
+    if (textToSpeechEnabled) {
+      playAIMessage(text);
+    }
+  };
+
   const sendUserMessage = async (text: string) => {
     if (!text.trim()) return;
 
@@ -85,8 +193,16 @@ export default function AIChat() {
 
     setMessages((prev) => [...prev, newMessage]);
     setUserInput("");
-    setIsTyping(true);
     setLoading(true);
+    
+    // Add thinking message
+    const thinkingMessageId = (Date.now() + 1).toString();
+    setMessages(prev => [...prev, { 
+      id: thinkingMessageId, 
+      text: "", 
+      sender: "ai",
+      isLoading: true 
+    }]);
 
     try {
       const res = await fetch('http://localhost:5000/api/genai/ask', {
@@ -101,25 +217,59 @@ export default function AIChat() {
         throw new Error(`Error: ${res.status}`);
       }
 
-      const data = await res.json();
-      const aiResponse = {
-        id: (Date.now() + 1).toString(),
-        text: data.response || "I'm sorry, I couldn't generate a response.",
-        sender: "ai" as const,
-      };
+      const reader = res.body?.getReader();
+      let fullResponse = '';
       
-      setIsTyping(false);
-      setMessages((prev) => [...prev, aiResponse]);
+      setMessages(prev => prev.filter(m => m.id !== thinkingMessageId));
+      
+      const aiResponseId = (Date.now() + 2).toString();
+      setMessages(prev => [...prev, { 
+        id: aiResponseId, 
+        text: '', 
+        sender: "ai"
+      }]);
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) break;
+          
+          // Convert the chunk to text
+          const chunk = new TextDecoder().decode(value);
+          try {
+            // Assuming each chunk is a JSON with response property
+            const chunkData = JSON.parse(chunk);
+            fullResponse += chunkData.response || '';
+            
+            // Update the AI message with the current accumulated response
+            setMessages(prev => prev.map(m => 
+              m.id === aiResponseId ? { ...m, text: fullResponse, hasBeenSpoken: false } : m
+            ));
+          } catch (e) {
+            // If not valid JSON, just append as text
+            fullResponse += chunk;
+            setMessages(prev => prev.map(m => 
+              m.id === aiResponseId ? { ...m, text: fullResponse, hasBeenSpoken: false } : m
+            ));
+          }
+        }
+      } else {
+        const data = await res.json();
+        setMessages(prev => prev.map(m => 
+          m.id === aiResponseId ? { ...m, text: data.response || "I couldn't generate a response." } : m
+        ));
+      }
+
     } catch (error) {
       console.error('Error:', error);
-      const errorMessage = {
-        id: (Date.now() + 1).toString(),
-        text: "I'm sorry, something went wrong with my response.",
-        sender: "ai" as const,
-      };
+      setMessages(prev => prev.filter(m => m.id !== thinkingMessageId));
       
-      setIsTyping(false);
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, {
+        id: (Date.now() + 3).toString(),
+        text: "I'm sorry, something went wrong with my response.",
+        sender: "ai"
+      }]);
     } finally {
       setLoading(false);
     }
@@ -131,12 +281,26 @@ export default function AIChat() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-purple-100 h-[400px] max-w-screen-2xl w-full">
+    <div className="bg-white rounded-xl shadow-xl overflow-hidden border h-[600px] border-purple-100 max-w-screen-2xl w-full h-full flex flex-col">
       <div className="flex items-center justify-between p-3 border-b bg-purple-50">
         <div className="flex items-center space-x-2">
           <Brain className="h-5 w-5 text-purple-600" />
           <h3 className="font-semibold text-gray-800">AI Emotional Twin</h3>
         </div>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={toggleTextToSpeech}
+          className="rounded-full"
+          title={textToSpeechEnabled ? "Mute voice" : "Enable voice"}
+        >
+          {textToSpeechEnabled ? (
+            <Volume2 className="h-5 w-5 text-purple-600" />
+          ) : (
+            <VolumeX className="h-5 w-5 text-gray-400" />
+          )}
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 h-[calc(100%-8rem)]">
@@ -176,29 +340,29 @@ export default function AIChat() {
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  {message.text}
+                        <ReactMarkdown>{message.text}</ReactMarkdown>
+                  {message.isLoading && (
+                    <span className="ml-1 inline-block animate-pulse">Thinking...▋</span>
+                  )}
+                  {message.sender === "ai" && !message.isLoading && message.text.trim() && (
+                    <div className="mt-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="p-1 h-7 text-xs flex items-center text-purple-600 hover:bg-purple-50"
+                        onClick={() => playMessageAudio(message.text)}
+                      >
+                        <Repeat className="h-3 w-3 mr-1" /> Listen
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
           ))}
-
-          {isTyping && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex justify-start"
-            >
-              <div className="flex space-x-2 max-w-[80%]">
-                <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center bg-gray-200">
-                  <Bot className="h-5 w-5 text-gray-600" />
-                </div>
-                <div className="rounded-lg p-3 bg-gray-100 text-gray-800">
-                  <span className="inline-block animate-pulse">▋</span>
-                </div>
-              </div>
-            </motion.div>
-          )}
         </AnimatePresence>
+        <div ref={messagesEndRef} />
       </div>
 
       <form
