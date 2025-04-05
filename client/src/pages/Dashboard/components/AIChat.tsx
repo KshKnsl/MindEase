@@ -4,7 +4,7 @@ import { Mic, MicOff, Brain, User, Bot, Send, Volume2, VolumeX, Repeat } from "l
 import { Button } from "../../../components/ui/button";
 import VoiceWaveAnimation from "./voice-wave-animation";
 import ReactMarkdown from "react-markdown";
-import { textToSpeech, speakWithBrowserAPI } from "../../../utils/textToSpeech";
+import { ElevenLabsClient } from "elevenlabs";
 
 interface Message {
   id: string;
@@ -22,7 +22,9 @@ export default function AIChat() {
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const [currentText, setCurrentText] = useState(""); // Removed unused state variable 'currentText'
-  
+  const client = new ElevenLabsClient({ apiKey: import.meta.env.VITE_ELEVENLABS_API_KEY });
+  console.log(client);
+
   
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -144,38 +146,20 @@ export default function AIChat() {
     // Don't speak if the message is empty
     if (!text.trim()) return;
     
-    try {
-      // Try with Murf AI API first
-      textToSpeech({ 
-        text: text,
-        onError: (error) => {
-          console.error('Failed to use Murf API, falling back to browser TTS', error);
-          speakWithBrowserAPI(text);
-        }
-      }).then(audioUrl => {
-        const audio = new Audio(audioUrl);
-        setCurrentlyPlayingAudio(audio);
-        audioRef.current = audio;
-        
-        audio.onplay = () => setIsSpeaking(true);
-        audio.onended = () => {
-          setIsSpeaking(false);
-          setCurrentlyPlayingAudio(null);
-        };
-        
-        audio.play().catch(err => {
-          console.error('Error playing audio:', err);
-          speakWithBrowserAPI(text);
-        });
-      }).catch(error => {
-        // If Murf API fails, use browser's built-in speech synthesis
-        speakWithBrowserAPI(text);
-      });
-    } catch (error) {
-      console.error('Error with text-to-speech:', error);
-      speakWithBrowserAPI(text);
-    }
-  };
+    // You need to create an audio URL or use ElevenLabs API to get audio
+    const audioUrl = ""; // Replace with actual audio URL from ElevenLabs
+    const audio = new Audio(audioUrl);
+    setCurrentlyPlayingAudio(audio);
+    audioRef.current = audio;
+    
+    audio.onplay = () => setIsSpeaking(true);
+    audio.onended = () => {
+      setIsSpeaking(false);
+      setCurrentlyPlayingAudio(null);
+    };
+    
+    audio.play().catch(err => console.error("Error playing audio:", err));
+  }
 
   // Manually trigger speech for a specific message (for the Listen button)
   const playMessageAudio = (text: string) => {

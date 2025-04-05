@@ -9,7 +9,6 @@ import { router as authRoutes } from './routes/auth.js';
 import { router as questionRoutes } from './routes/questions.js';
 import {router as responseRoutes} from './routes/Response.js';
 import { userRouter } from './routes/user.js';
-import { router as ttsRoutes } from './routes/tts.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 dotenv.config(); 
@@ -25,7 +24,6 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
     .catch(err => console.error('MongoDB connection error:', err));
 
 app.use('/api/auth', authRoutes);
-app.use('/api/tts', ttsRoutes);
 
 const auth = async (req, res, next) => {
     try {

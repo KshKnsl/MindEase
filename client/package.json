@@ -21,6 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dompurify": "^3.2.5",
+    "elevenlabs": "^1.56.0",
     "framer-motion": "^11.0.8",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.344.0",
