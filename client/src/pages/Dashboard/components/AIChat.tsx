@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Brain, User, Bot, Send, Volume2, VolumeX, Repeat } from "lucide-react";
+import { Mic, MicOff, Brain, User, Bot, Send, Repeat } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import VoiceWaveAnimation from "./voice-wave-animation";
 import ReactMarkdown from "react-markdown";
@@ -18,7 +18,6 @@ export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", text: "How are you feeling today?", sender: "ai" },
   ]);
-  const [currentText, setCurrentText] = useState(""); // Removed unused state variable 'currentText'
   
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +25,6 @@ export default function AIChat() {
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize speech recognition
   useEffect(() => {
     if (typeof window !== "undefined") {
       const SpeechRecognition =
@@ -43,7 +41,6 @@ export default function AIChat() {
           const transcript = event.results[0][0].transcript;
           setUserInput(transcript);
           sendUserMessage(transcript);
-          setCurrentText(transcript);
         };
 
         recognitionRef.current.onend = () => {
@@ -120,12 +117,9 @@ export default function AIChat() {
         body: JSON.stringify({ prompt: text, userId: token }),
       });
 
-      console.log('Response:', res);
-      if (!res.ok) {
-        throw new Error(`Error: ${res.status}`);
-      }
-
-      let fullResponse = '';
+      const data = await res.json();
+      console.log('Response:', data);
+      
       const reader = res.body?.getReader();
       console.log('Response reader:', reader);
       
@@ -144,19 +138,15 @@ export default function AIChat() {
           
           if (done) break;
           
-          // Convert the chunk to text
           const chunk = new TextDecoder().decode(value);
           try {
-            // Assuming each chunk is a JSON with response property
             const chunkData = JSON.parse(chunk);
             fullResponse += chunkData.response || '';
             
-            // Update the AI message with the current accumulated response
             setMessages(prev => prev.map(m => 
               m.id === aiResponseId ? { ...m, text: fullResponse } : m
             ));
           } catch (e) {
-            // If not valid JSON, just append as text
             fullResponse += chunk;
             setMessages(prev => prev.map(m => 
               m.id === aiResponseId ? { ...m, text: fullResponse } : m
