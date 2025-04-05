@@ -1,17 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Brain, User, Bot, Send, Volume2, VolumeX, Repeat } from "lucide-react";
+import { Mic, MicOff, Brain, User, Bot, Send, Repeat } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import VoiceWaveAnimation from "./voice-wave-animation";
 import ReactMarkdown from "react-markdown";
-import { ElevenLabsClient } from "elevenlabs";
 
 interface Message {
   id: string;
   text: string;
   sender: "user" | "ai";
   isLoading?: boolean;
-  hasBeenSpoken?: boolean;
 }
 
 export default function AIChat() {
@@ -20,22 +18,13 @@ export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", text: "How are you feeling today?", sender: "ai" },
   ]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [currentText, setCurrentText] = useState(""); // Removed unused state variable 'currentText'
-  const client = new ElevenLabsClient({ apiKey: import.meta.env.VITE_ELEVENLABS_API_KEY });
-  console.log(client);
-
   
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [textToSpeechEnabled, setTextToSpeechEnabled] = useState(true);
-  const [currentlyPlayingAudio, setCurrentlyPlayingAudio] = useState<HTMLAudioElement | null>(null);
   
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize speech recognition
   useEffect(() => {
     if (typeof window !== "undefined") {
       const SpeechRecognition =
@@ -52,7 +41,6 @@ export default function AIChat() {
           const transcript = event.results[0][0].transcript;
           setUserInput(transcript);
           sendUserMessage(transcript);
-          setCurrentText(transcript);
         };
 
         recognitionRef.current.onend = () => {
@@ -77,38 +65,7 @@ export default function AIChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Play speech for new AI messages
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage && 
-        lastMessage.sender === 'ai' && 
-        !lastMessage.isLoading && 
-        textToSpeechEnabled && 
-        !lastMessage.hasBeenSpoken) {
-      
-      // Wait for streaming to complete
-      const timeoutId = setTimeout(() => {
-        // Stop any currently playing audio
-        if (currentlyPlayingAudio) {
-          currentlyPlayingAudio.pause();
-          currentlyPlayingAudio.currentTime = 0;
-        }
-
-        if (!lastMessage.text.trim()) return;
-        
-        // Play the message and mark it as spoken
-        playAIMessage(lastMessage.text);
-        
-        // Mark message as spoken
-        setMessages(prev => prev.map(msg => 
-          msg.id === lastMessage.id ? { ...msg, hasBeenSpoken: true } : msg
-        ));
-      }, 500); // Wait 500ms after last update
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [messages, textToSpeechEnabled]);
-
+ 
   const toggleListening = () => {
     if (isListening) {
       recognitionRef.current?.stop();
@@ -120,51 +77,6 @@ export default function AIChat() {
       } catch (error) {
         console.error("Speech recognition error:", error);
       }
-    }
-  };
-
-  const toggleTextToSpeech = () => {
-    setTextToSpeechEnabled(!textToSpeechEnabled);
-    
-    // Stop current audio if disabling text-to-speech
-    if (textToSpeechEnabled && currentlyPlayingAudio) {
-      currentlyPlayingAudio.pause();
-      currentlyPlayingAudio.currentTime = 0;
-      setCurrentlyPlayingAudio(null);
-      setIsSpeaking(false);
-    }
-  };
-
-  // Extract common speech functionality to a single function
-  const playAIMessage = (text: string) => {
-    // Stop any currently playing audio
-    if (currentlyPlayingAudio) {
-      currentlyPlayingAudio.pause();
-      currentlyPlayingAudio.currentTime = 0;
-    }
-
-    // Don't speak if the message is empty
-    if (!text.trim()) return;
-    
-    // You need to create an audio URL or use ElevenLabs API to get audio
-    const audioUrl = ""; // Replace with actual audio URL from ElevenLabs
-    const audio = new Audio(audioUrl);
-    setCurrentlyPlayingAudio(audio);
-    audioRef.current = audio;
-    
-    audio.onplay = () => setIsSpeaking(true);
-    audio.onended = () => {
-      setIsSpeaking(false);
-      setCurrentlyPlayingAudio(null);
-    };
-    
-    audio.play().catch(err => console.error("Error playing audio:", err));
-  }
-
-  // Manually trigger speech for a specific message (for the Listen button)
-  const playMessageAudio = (text: string) => {
-    if (textToSpeechEnabled) {
-      playAIMessage(text);
     }
   };
 
@@ -205,20 +117,11 @@ export default function AIChat() {
         body: JSON.stringify({ prompt: text, userId: token }),
       });
 
-      console.log('Response:', res);
-      if (!res.ok) {
-        throw new Error(`Error: ${res.status}`);
-      }
-
       const data = await res.json();
-      console.log('Response data:', data);
-      const aiResponse = {
-        id: (Date.now() + 1).toString(),
-        text: data || "I'm sorry, I couldn't generate a response.",
-        sender: "ai" as const,
-      };
+      console.log('Response:', data);
+      
       const reader = res.body?.getReader();
-      let fullResponse = '';
+      console.log('Response reader:', reader);
       
       setMessages(prev => prev.filter(m => m.id !== thinkingMessageId));
       
@@ -235,22 +138,18 @@ export default function AIChat() {
           
           if (done) break;
           
-          // Convert the chunk to text
           const chunk = new TextDecoder().decode(value);
           try {
-            // Assuming each chunk is a JSON with response property
             const chunkData = JSON.parse(chunk);
             fullResponse += chunkData.response || '';
             
-            // Update the AI message with the current accumulated response
             setMessages(prev => prev.map(m => 
-              m.id === aiResponseId ? { ...m, text: fullResponse, hasBeenSpoken: false } : m
+              m.id === aiResponseId ? { ...m, text: fullResponse } : m
             ));
           } catch (e) {
-            // If not valid JSON, just append as text
             fullResponse += chunk;
             setMessages(prev => prev.map(m => 
-              m.id === aiResponseId ? { ...m, text: fullResponse, hasBeenSpoken: false } : m
+              m.id === aiResponseId ? { ...m, text: fullResponse } : m
             ));
           }
         }
@@ -285,26 +184,12 @@ export default function AIChat() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-xl overflow-hidden border h-[600px] border-purple-100 max-w-screen-2xl w-full h-full flex flex-col">
+    <div className="bg-white rounded-xl shadow-xl overflow-hidden border min-h-[600px] border-purple-100 max-w-screen-2xl w-full h-full flex flex-col">
       <div className="flex items-center justify-between p-3 border-b bg-purple-50">
         <div className="flex items-center space-x-2">
           <Brain className="h-5 w-5 text-purple-600" />
           <h3 className="font-semibold text-gray-800">AI Emotional Twin</h3>
         </div>
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          onClick={toggleTextToSpeech}
-          className="rounded-full"
-          title={textToSpeechEnabled ? "Mute voice" : "Enable voice"}
-        >
-          {textToSpeechEnabled ? (
-            <Volume2 className="h-5 w-5 text-purple-600" />
-          ) : (
-            <VolumeX className="h-5 w-5 text-gray-400" />
-          )}
-        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 h-[calc(100%-8rem)]">
@@ -355,7 +240,7 @@ export default function AIChat() {
                         variant="ghost"
                         size="sm"
                         className="p-1 h-7 text-xs flex items-center text-purple-600 hover:bg-purple-50"
-                        onClick={() => playMessageAudio(message.text)}
+                        onClick={() => {}}
                       >
                         <Repeat className="h-3 w-3 mr-1" /> Listen
                       </Button>
