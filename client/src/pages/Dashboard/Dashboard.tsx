@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, BarChart3, Book, Users } from 'lucide-react';
 import AIChat from './components/AIChat';
+import JournelEntry from './components/JournalEntry';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('ai');
@@ -28,7 +29,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Sidebar */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <nav className="space-y-4">
+            <nav className="space-y-4 flex flex-col">
               <button
                 onClick={() => setActiveTab('ai')}
                 className={`w-full flex items-center space-x-2 p-2 rounded-md ${
@@ -37,6 +38,15 @@ const Dashboard = () => {
               >
                 <Brain className="h-5 w-5" />
                 <span>AI Twin</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('journel')}
+                className={`w-full flex items-center space-x-2 p-2 rounded-md ${
+                  activeTab === 'journel' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
+                }`}
+              >
+                <Brain className="h-5 w-5" />
+                <span>Journel</span>
               </button>
             </nav>
           </div>
@@ -49,7 +59,9 @@ const Dashboard = () => {
               transition={{ duration: 0.5 }}
             >
               {activeTab === 'ai' && <AIChat />}
+              {activeTab === 'journel' && <JournelEntry />}
             </motion.div>
+            
           </div>
         </div>
       </div>
