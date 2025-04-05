@@ -82,21 +82,27 @@ export default function AIChat() {
       text: text,
       sender: "user" as const,
     };
-
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('Token is missing. Please log in again.');
+      return;
+    }
     setMessages((prev) => [...prev, newMessage]);
     setUserInput("");
     setIsTyping(true);
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/genai/ask', {
+      console.log('Sending message:', text);
+      const res = await fetch('http:/localhost:5000/api/response/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: text }),
+        body: JSON.stringify({ prompt: text, userId: token }),
       });
 
+      console.log('Response:', res);
       if (!res.ok) {
         throw new Error(`Error: ${res.status}`);
       }
