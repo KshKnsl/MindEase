@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(apikey);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 const YesOrNo = `Just tell me "yes" or "no" to the question: Is the user trying to schedule some task? You will only respond in "yes" or "no".`;
-app.post("/api/genai/ask", async (req, res) => {
+router.post("/api/genai/ask", async (req, res) => {
     try {
         const { prompt, conversationHistory = [], saveQuestion = false } = req.body;
 
