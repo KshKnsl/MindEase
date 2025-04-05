@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, BarChart3, Book, Users, User } from 'lucide-react';
+import { Brain, User } from 'lucide-react';
 import AIChat from './components/AIChat';
-import JournalEntry from './components/JournalEntry';
 import UserProfile from './components/UserProfile';
 
 const Dashboard = () => {
@@ -12,7 +11,6 @@ const Dashboard = () => {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   useEffect(() => {
-    // Fetch user data
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -61,24 +59,21 @@ const Dashboard = () => {
         if (response.ok) {
           const profileData = await response.json();
           
-          // If user has completed profile, set default tab to 'ai'
-          // Otherwise, set default tab to 'knowme'
           if (profileData && profileData.responses && profileData.responses.length > 0) {
             setActiveTab('ai');
           } else {
             setActiveTab('knowme');
           }
         } else {
-          // If response is 404 (no profile), direct to 'knowme'
           if (response.status === 404) {
             setActiveTab('knowme');
           } else {
-            setActiveTab('ai');  // Default to AI for any other error
+            setActiveTab('ai'); 
           }
         }
       } catch (error) {
         console.error('Error checking user profile:', error);
-        setActiveTab('ai');  // Default to AI if there's an error
+        setActiveTab('ai');  
       } finally {
         setIsLoadingProfile(false);
       }
@@ -88,7 +83,6 @@ const Dashboard = () => {
     checkUserProfile();
   }, []);
 
-  // Show loading spinner while determining the default tab
   if (isLoadingProfile) {
     return (
       <div className="min-h-screen bg-purple-50 flex justify-center items-center">
@@ -122,42 +116,6 @@ const Dashboard = () => {
             <span className="hidden group-hover:inline-block">Let Me Know You</span>
           </button>
           
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`flex items-center space-x-2 p-2 rounded-md w-full ${
-              activeTab === 'analytics' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
-            }`}
-          >
-            <BarChart3 className="h-5 w-5 mx-auto group-hover:mx-0" />
-            <span className="hidden group-hover:inline-block">Analytics</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('resources')}
-            className={`flex items-center space-x-2 p-2 rounded-md w-full ${
-              activeTab === 'resources' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
-            }`}
-          >
-            <Book className="h-5 w-5 mx-auto group-hover:mx-0" />
-            <span className="hidden group-hover:inline-block">Resources</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('community')}
-            className={`flex items-center space-x-2 p-2 rounded-md w-full ${
-              activeTab === 'community' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
-            }`}
-          >
-            <Users className="h-5 w-5 mx-auto group-hover:mx-0" />
-            <span className="hidden group-hover:inline-block">Community</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('journal')}
-            className={`flex items-center space-x-2 p-2 rounded-md w-full ${
-              activeTab === 'journal' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
-            }`}
-          >
-            <Book className="h-5 w-5 mx-auto group-hover:mx-0" />
-            <span className="hidden group-hover:inline-block">Journal</span>
-          </button>
         </div>
       </div>
 
@@ -174,11 +132,7 @@ const Dashboard = () => {
           transition={{ duration: 0.5 }}
         >
           {activeTab === 'ai' && <AIChat />}
-          {activeTab === 'journal' && <JournalEntry />}
           {activeTab === 'knowme' && <UserProfile userData={userData} />}
-          {activeTab === 'analytics' && <div>Analytics Content</div>}
-          {activeTab === 'resources' && <div>Resources Content</div>}
-          {activeTab === 'community' && <div>Community Content</div>}
         </motion.div>
       </div>
     </div>

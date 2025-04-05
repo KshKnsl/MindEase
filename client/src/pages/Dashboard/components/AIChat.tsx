@@ -19,6 +19,7 @@ export default function AIChat() {
   const [isTyping, setIsTyping] = useState(false);
   const [currentText, setCurrentText] = useState("");
   const [userInput, setUserInput] = useState("");
+  const [loading, setLoading] = useState(false);
   const recognitionRef = useRef<any>(null);
 
   // Initialize speech recognition
@@ -55,7 +56,6 @@ export default function AIChat() {
         recognitionRef.current.onaudiostart = () => {
           setIsSpeaking(true); 
         };
-
       }
     }
   }, []);
@@ -74,7 +74,7 @@ export default function AIChat() {
     }
   };
 
-  const sendUserMessage = (text: string) => {
+  const sendUserMessage = async (text: string) => {
     if (!text.trim()) return;
 
     const newMessage = {
@@ -85,20 +85,44 @@ export default function AIChat() {
 
     setMessages((prev) => [...prev, newMessage]);
     setUserInput("");
+    setIsTyping(true);
+    setLoading(true);
 
-    setTimeout(() => {
-      setIsTyping(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/genai/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: text }),
+      });
 
-      setTimeout(() => {
-        const aiResponse = {
-          id: (Date.now() + 1).toString(),
-          text: "Thank you for sharing. How else can I assist you today?",
-          sender: "ai" as const,
-        };
-        setIsTyping(false);
-        setMessages((prev) => [...prev, aiResponse]);
-      }, 2000);
-    }, 1000);
+      if (!res.ok) {
+        throw new Error(`Error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      const aiResponse = {
+        id: (Date.now() + 1).toString(),
+        text: data.response || "I'm sorry, I couldn't generate a response.",
+        sender: "ai" as const,
+      };
+      
+      setIsTyping(false);
+      setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Error:', error);
+      const errorMessage = {
+        id: (Date.now() + 1).toString(),
+        text: "I'm sorry, something went wrong with my response.",
+        sender: "ai" as const,
+      };
+      
+      setIsTyping(false);
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -169,7 +193,6 @@ export default function AIChat() {
                   <Bot className="h-5 w-5 text-gray-600" />
                 </div>
                 <div className="rounded-lg p-3 bg-gray-100 text-gray-800">
-                  {currentText}
                   <span className="inline-block animate-pulse">▋</span>
                 </div>
               </div>
@@ -188,7 +211,7 @@ export default function AIChat() {
           placeholder={isListening ? "Listening..." : "Type your message..."}
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
-          disabled={isListening}
+          disabled={isListening || loading}
         />
         {userInput && (
           <Button
@@ -196,6 +219,7 @@ export default function AIChat() {
             size="icon"
             variant="default"
             className="rounded-full bg-purple-600"
+            disabled={loading}
           >
             <Send className="h-4 w-4" />
           </Button>
@@ -209,6 +233,7 @@ export default function AIChat() {
               isListening ? "bg-red-500" : "bg-purple-600"
             }`}
             onClick={toggleListening}
+            disabled={loading}
           >
             {isListening ? (
               <MicOff className="h-4 w-4" />
