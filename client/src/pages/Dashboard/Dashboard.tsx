@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, BarChart3, Book, Users } from 'lucide-react';
+import { Brain, BarChart3, Book, Users, User } from 'lucide-react';
 import AIChat from './components/AIChat';
 import JournalEntry from './components/JournalEntry';
+import UserProfile from './components/UserProfile';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('ai');
   const [userData, setUserData] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(''); // New state for error messages
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     // Fetch user data
@@ -37,7 +38,7 @@ const Dashboard = () => {
 
         const data = await response.json();
         setUserData(data);
-        setErrorMessage(''); // Clear error message on success
+        setErrorMessage('');
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -60,6 +61,17 @@ const Dashboard = () => {
             <Brain className="h-5 w-5 mx-auto group-hover:mx-0" />
             <span className="hidden group-hover:inline-block">AI Twin</span>
           </button>
+          
+          <button
+            onClick={() => setActiveTab('knowme')}
+            className={`flex items-center space-x-2 p-2 rounded-md w-full ${
+              activeTab === 'knowme' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
+            }`}
+          >
+            <User className="h-5 w-5 mx-auto group-hover:mx-0" />
+            <span className="hidden group-hover:inline-block">Let Me Know You</span>
+          </button>
+          
           <button
             onClick={() => setActiveTab('analytics')}
             className={`flex items-center space-x-2 p-2 rounded-md w-full ${
@@ -113,6 +125,7 @@ const Dashboard = () => {
         >
           {activeTab === 'ai' && <AIChat />}
           {activeTab === 'journal' && <JournalEntry />}
+          {activeTab === 'knowme' && <UserProfile userData={userData} />}
           {activeTab === 'analytics' && <div>Analytics Content</div>}
           {activeTab === 'resources' && <div>Resources Content</div>}
           {activeTab === 'community' && <div>Community Content</div>}
