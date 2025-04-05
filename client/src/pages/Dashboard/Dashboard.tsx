@@ -6,9 +6,10 @@ import JournalEntry from './components/JournalEntry';
 import UserProfile from './components/UserProfile';
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('ai');
+  const [activeTab, setActiveTab] = useState<string | null>(null);
   const [userData, setUserData] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   useEffect(() => {
     // Fetch user data
@@ -44,8 +45,57 @@ const Dashboard = () => {
       }
     };
 
+    // Check if user has a profile
+    const checkUserProfile = async () => {
+      try {
+        setIsLoadingProfile(true);
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        const response = await fetch('http://localhost:5000/api/user/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const profileData = await response.json();
+          
+          // If user has completed profile, set default tab to 'ai'
+          // Otherwise, set default tab to 'knowme'
+          if (profileData && profileData.responses && profileData.responses.length > 0) {
+            setActiveTab('ai');
+          } else {
+            setActiveTab('knowme');
+          }
+        } else {
+          // If response is 404 (no profile), direct to 'knowme'
+          if (response.status === 404) {
+            setActiveTab('knowme');
+          } else {
+            setActiveTab('ai');  // Default to AI for any other error
+          }
+        }
+      } catch (error) {
+        console.error('Error checking user profile:', error);
+        setActiveTab('ai');  // Default to AI if there's an error
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
     fetchUserData();
+    checkUserProfile();
   }, []);
+
+  // Show loading spinner while determining the default tab
+  if (isLoadingProfile) {
+    return (
+      <div className="min-h-screen bg-purple-50 flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-purple-50 flex">
