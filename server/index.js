@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import { User } from './models/User.js';
 import { router as authRoutes } from './routes/auth.js';
 import { router as questionRoutes } from './routes/questions.js';
+import {router as responseRoutes} from './routes/Response.js';
 import { userRouter } from './routes/user.js';
 import { router as ttsRoutes } from './routes/tts.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -50,7 +51,10 @@ const auth = async (req, res, next) => {
 // Using the auth middleware for protected routes
 app.use('/api/user', auth, userRouter);
 app.use('/api/questions', auth, questionRoutes);
-
+app.use('/api/response', (req, res, next) => {
+    console.log('Response route hit');
+    next();
+}, responseRoutes);
 app.get('/api/user/data', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
@@ -73,13 +77,13 @@ and act as a supportive emotional companion. Respond with empathy and clarity. S
 
 app.post('/api/genai/ask', async (req, res) => {
     try {
+        console.log('Received request to /api/genai/ask', req.body);
         const { prompt, conversationHistory = [], saveQuestion = false } = req.body;
-        
+        console.log('Prompt:', prompt);
         if (!prompt) {
             return res.status(400).json({ error: 'Prompt is required.' });
         }
 
-        // Check if the user has a profile and include it in the context
         let userContext = "";
         if (req.userId) {
             try {
