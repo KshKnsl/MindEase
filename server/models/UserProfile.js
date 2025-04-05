@@ -1,32 +1,32 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const userProfileSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
-    unique: true
+    unique: true,
   },
   responses: [
     {
       question: {
         type: String,
-        required: true
+        required: true,
       },
       answer: {
         type: String,
-        required: true
-      }
-    }
+        required: true,
+      },
+    },
   ],
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-export const UserProfile = mongoose.model('UserProfile', userProfileSchema);
+export const UserProfile = mongoose.model("UserProfile", userProfileSchema);

@@ -4,7 +4,6 @@ import { UserProfile } from '../models/UserProfile.js';
 
 const router = express.Router();
 
-// Get user data
 router.get('/data', async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('-password');
@@ -14,7 +13,6 @@ router.get('/data', async (req, res) => {
   }
 });
 
-// Save or update user profile
 router.post('/profile', async (req, res) => {
   try {
     const { profileData } = req.body;
@@ -23,16 +21,15 @@ router.post('/profile', async (req, res) => {
       return res.status(400).json({ error: 'Valid profile data is required' });
     }
     
-    // Format the responses
     const responses = profileData.map(item => ({
       question: item.question,
       answer: item.answer
     }));
     
-    // Check if profile exists and update, otherwise create new
     const existingProfile = await UserProfile.findOne({ userId: req.userId });
     
-    if (existingProfile) {
+    if (existingProfile) 
+    {
       existingProfile.responses = responses;
       existingProfile.updatedAt = Date.now();
       await existingProfile.save();
@@ -51,7 +48,6 @@ router.post('/profile', async (req, res) => {
   }
 });
 
-// Get user profile
 router.get('/profile', async (req, res) => {
   try {
     const profile = await UserProfile.findOne({ userId: req.userId });
