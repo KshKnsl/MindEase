@@ -195,11 +195,11 @@ export default function LandingPage() {
               Your personal AI assistant manages thoughts, emotions, tasks, and stress while helping you stay focused.
             </p>
             <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-              <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white px-8">
-                Start Offloading
+              <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white px-8" onClick={() => window.location.href = '/register'}>
+                Get Started
               </Button>
-              <Button size="lg" variant="outline" className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 px-8">
-                Watch Demo
+              <Button size="lg" variant="outline" className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 px-8" onClick={() => window.location.href = '/login'}>
+                Login
               </Button>
             </div>
           </motion.div>

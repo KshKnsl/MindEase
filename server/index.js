@@ -2,27 +2,24 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs'; // Use bcryptjs instead of bcrypt
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from './models/User.js';
 import { router as authRoutes } from './routes/auth.js';
 
-dotenv.config(); // Load environment variables
+dotenv.config(); 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mindease';
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-// Routes
 app.use('/api/auth', authRoutes);
 
-// Middleware to verify JWT
 const auth = async (req, res, next) => {
     try {
         const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -36,7 +33,6 @@ const auth = async (req, res, next) => {
     }
 };
 
-// Protected Route
 app.get('/api/user/data', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');

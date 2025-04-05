@@ -14,10 +14,8 @@ const Navbar = () => {
             </Link>
           </div>
           <div className="flex items-center space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-purple-600">Home</Link>
-            <Link to="/features" className="text-gray-700 hover:text-purple-600">Features</Link>
-            <Link to="/about" className="text-gray-700 hover:text-purple-600">About Us</Link>
-            <Link to="/contact" className="text-gray-700 hover:text-purple-600">Contact</Link>
+            <Link to="/dashboard" className="text-gray-700 hover:text-purple-600">Dashboard</Link>
+            <Link to="/register" className="text-gray-700 hover:text-purple-600">Register</Link>
             <Link to="/login" className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">
               Login
             </Link>
