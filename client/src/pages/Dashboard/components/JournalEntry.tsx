@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const apikey = import.meta.env.VITE_Gemini_API_KEY || "";
-const genAI = new GoogleGenerativeAI(apikey);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 const JournalEntry: React.FC = () => {
   const [input, setInput] = useState('');
   const [response, setResponse] = useState('');
@@ -16,16 +12,20 @@ const JournalEntry: React.FC = () => {
     setResponse('');
 
     try {
-      const result = await model.generateContent(input);
-    const text = result.response.text();
-    console.log(text);
+      const res = await fetch('http://localhost:5000/api/genai/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: input }),
+      });
 
-      if (text && text.length > 0) {
-        setResponse(text);
-        
-      } else {
-        setResponse('No response received.');
+      if (!res.ok) {
+        throw new Error(`Error: ${res.status}`);
       }
+
+      const data = await res.json();
+      setResponse(data.response || 'No response received.');
     } catch (error) {
       console.error('Error:', error);
       setResponse('Something went wrong.');
@@ -35,22 +35,26 @@ const JournalEntry: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h2>Ask Gemini</h2>
+    <div className="p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-xl font-semibold mb-4">Ask Gemini</h2>
       <input
         type="text"
         placeholder="Type your prompt..."
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        style={{ padding: '0.5rem', width: '60%' }}
+        className="border rounded-lg p-2 w-full mb-4"
       />
-      <button onClick={handleAsk} style={{ marginLeft: '1rem', padding: '0.5rem 1rem' }}>
+      <button
+        onClick={handleAsk}
+        className="bg-purple-600 text-white px-4 py-2 rounded-lg"
+        disabled={loading}
+      >
         {loading ? 'Loading...' : 'Ask'}
       </button>
 
-      <div style={{ marginTop: '2rem', whiteSpace: 'pre-wrap' }}>
-        <h3>Response:</h3>
-        <p>{response}</p>
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold">Response:</h3>
+        <p className="whitespace-pre-wrap">{response}</p>
       </div>
     </div>
   );
