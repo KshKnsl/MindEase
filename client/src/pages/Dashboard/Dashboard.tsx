@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, BarChart3, Book, Users } from 'lucide-react';
 import MoodTracker from './components/MoodTracker';
-import JournalEntry from './components/JournalEntry';
+import JournalEntry from './components/hftrtrtrJournalEntry';
 import AIChat from './components/AIChat';
 
 const Dashboard = () => {
