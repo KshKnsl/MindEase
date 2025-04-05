@@ -8,6 +8,7 @@ import { User } from './models/User.js';
 import { router as authRoutes } from './routes/auth.js';
 import { router as questionRoutes } from './routes/questions.js';
 import { userRouter } from './routes/user.js';
+import { router as ttsRoutes } from './routes/tts.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 dotenv.config(); 
@@ -23,6 +24,7 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
     .catch(err => console.error('MongoDB connection error:', err));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/tts', ttsRoutes);
 
 const auth = async (req, res, next) => {
     try {
@@ -67,7 +69,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 const MINDEASE_ROLE_CONTENT = 
 `You are MindEase, an AI brain offloader and emotional assistant that helps users manage their thoughts and emotions. 
 Help organize thoughts and ideas, detect emotional states, provide insights, offer stress-relief suggestions, 
-and act as a supportive emotional companion. Respond with empathy and clarity.`;
+and act as a supportive emotional companion. Respond with empathy and clarity. Since you are a voice assistant, you should take care of the answer's length and tone and choice of words`;
 
 app.post('/api/genai/ask', async (req, res) => {
     try {
