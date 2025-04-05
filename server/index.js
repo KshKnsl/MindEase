@@ -6,6 +6,8 @@ import jwt from 'jsonwebtoken';
 import morgan from 'morgan';
 import { User } from './models/User.js';
 import { router as authRoutes } from './routes/auth.js';
+import { router as questionRoutes } from './routes/questions.js';
+import { userRouter } from './routes/user.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 dotenv.config(); 
@@ -43,6 +45,10 @@ const auth = async (req, res, next) => {
     }
 };
 
+// Using the auth middleware for protected routes
+app.use('/api/user', auth, userRouter);
+app.use('/api/questions', auth, questionRoutes);
+
 app.get('/api/user/data', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
@@ -65,19 +71,40 @@ and act as a supportive emotional companion. Respond with empathy and clarity.`;
 
 app.post('/api/genai/ask', async (req, res) => {
     try {
-        const { prompt, conversationHistory = [] } = req.body;
+        const { prompt, conversationHistory = [], saveQuestion = false } = req.body;
         
         if (!prompt) {
             return res.status(400).json({ error: 'Prompt is required.' });
         }
 
-        // For Gemini 2.0, we'll use generateContent with role-based formatting
+        // Check if the user has a profile and include it in the context
+        let userContext = "";
+        if (req.userId) {
+            try {
+                const { UserProfile } = await import('./models/UserProfile.js');
+                const profile = await UserProfile.findOne({ userId: req.userId });
+                
+                if (profile && profile.responses.length > 0) {
+                    userContext = "User Profile Information:\n" + 
+                        profile.responses.map(r => `Q: ${r.question}\nA: ${r.answer}`).join('\n\n') + 
+                        "\n\nPlease use this information about the user to personalize your responses.";
+                }
+            } catch (error) {
+                console.error('Error fetching user profile:', error.message);
+            }
+        }
+        
+        // Combine the MindEase role with user context
+        const contextWithProfile = userContext 
+            ? `${MINDEASE_ROLE_CONTENT}\n\n${userContext}` 
+            : MINDEASE_ROLE_CONTENT;
+        
         const result = await model.generateContent({
             contents: [
                 {
                     role: "user",
                     parts: [
-                        { text: MINDEASE_ROLE_CONTENT },
+                        { text: contextWithProfile },
                         { text: prompt }
                     ]
                 }
@@ -86,10 +113,25 @@ app.post('/api/genai/ask', async (req, res) => {
         
         const text = result.response.text();
         
-        // Process the response
         const responseData = {
             response: text
         };
+
+        // Save the question and response if requested and user is authenticated
+        if (saveQuestion && req.userId) {
+            try {
+                const { Question } = await import('./models/Question.js');
+                const newQuestion = new Question({
+                    userId: req.userId,
+                    content: prompt,
+                    aiResponse: text
+                });
+                await newQuestion.save();
+                responseData.questionId = newQuestion._id;
+            } catch (error) {
+                console.error('Error saving question:', error.message);
+            }
+        }
         
         res.json(responseData);
     } catch (error) {
