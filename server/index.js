@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import morgan from 'morgan';
 import { User } from './models/User.js';
@@ -53,23 +52,46 @@ app.get('/api/user/data', auth, async (req, res) => {
     }
 });
 
-// Simplified Gemini API implementation
+// Enhanced Gemini AI implementation for MindEase
 const apikey = process.env.GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(apikey);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
+// Define the system prompt content for MindEase AI assistant
+const MINDEASE_ROLE_CONTENT = 
+`You are MindEase, an AI brain offloader and emotional assistant that helps users manage their thoughts and emotions. 
+Help organize thoughts and ideas, detect emotional states, provide insights, offer stress-relief suggestions, 
+and act as a supportive emotional companion. Respond with empathy and clarity.`;
+
 app.post('/api/genai/ask', async (req, res) => {
     try {
-        const { prompt } = req.body;
+        const { prompt, conversationHistory = [] } = req.body;
+        
         if (!prompt) {
             return res.status(400).json({ error: 'Prompt is required.' });
         }
 
-        const result = await model.generateContent(prompt);
-        const response = result.response;
-        const text = response.text();
+        // For Gemini 2.0, we'll use generateContent with role-based formatting
+        const result = await model.generateContent({
+            contents: [
+                {
+                    role: "user",
+                    parts: [
+                        { text: MINDEASE_ROLE_CONTENT },
+                        { text: prompt }
+                    ]
+                }
+            ]
+        });
         
-        res.json({ response: text });
+        const text = result.response.text();
+        
+        // Process the response
+        const responseData = {
+            response: text
+        };
+        
+        res.json(responseData);
     } catch (error) {
         console.error('Error interacting with Gemini:', error.message);
         res.status(500).json({ error: 'Failed to process the request.' });
