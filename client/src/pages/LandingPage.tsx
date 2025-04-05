@@ -323,7 +323,7 @@ export default function LandingPage() {
                 <div className="absolute -inset-4 bg-purple-100 rounded-3xl transform -rotate-3"></div>
                 <div className="absolute -inset-4 bg-purple-200 rounded-3xl transform rotate-3 opacity-70"></div>
                 <img 
-                  src="/placeholder.svg?height=600&width=600" 
+                  src="/icons/Brain2.png?height=600&width=600" 
                   alt="Mental clarity illustration" 
                   className="relative z-10 rounded-3xl shadow-lg"
                 />
@@ -471,7 +471,7 @@ export default function LandingPage() {
               <div className="aspect-square max-w-md mx-auto relative">
                 <div className="absolute inset-0 bg-purple-500 rounded-full opacity-20 animate-pulse"></div>
                 <img 
-                  src="/placeholder.svg?height=400&width=400" 
+                  src="/icons/Future2.png?height=400&width=400" 
                   alt="Future MindEase" 
                   className="relative z-10 rounded-3xl"
                 />
