@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa';
 import qrcode from 'qrcode-terminal';
 import * as os from 'node:os';
 import path from 'path';
@@ -35,53 +34,6 @@ function qrCodePlugin() {
 export default defineConfig({
   plugins: [
     react(),
-    // VitePWA({
-    //   registerType: 'autoUpdate',
-    //   injectRegister: "auto",
-    //   manifest: {
-    //     name: 'MindEase App',
-    //     short_name: 'MindEase',
-    //     description: 'A mindfulness and mental wellness application',
-    //     theme_color: '#ffffff',
-    //     background_color: '#ffffff',
-    //     display: 'standalone',
-    //     start_url: './', // Ensure relative path for proper PWA installation
-    //     scope: './', // Explicitly define the scope
-    //     orientation: 'portrait',
-    //     icons: [
-    //       {
-    //         src: '/icons/icon-192.png',
-    //         sizes: '192x192',
-    //         type: 'image/png'
-    //       },
-    //       {
-    //         src: '/icons/icon-512.png',
-    //         sizes: '512x512',
-    //         type: 'image/png'
-    //       },
-    //       {
-    //         src: '/icons/icon-maskable-192.png',
-    //         sizes: '192x192',
-    //         type: 'image/png',
-    //         purpose: 'maskable'
-    //       },
-    //       {
-    //         src: '/icons/icon-maskable-512.png',
-    //         sizes: '512x512',
-    //         type: 'image/png',
-    //         purpose: 'maskable'
-    //       }
-    //     ]
-    //   },
-    //   devOptions: {
-    //     enabled: true, // Enable service worker during development
-    //     type: 'module', // Ensure the service worker is loaded as a module
-    //   },
-    //   includeAssets: ['favicon.ico', 'robots.txt', 'icons/*'],
-    //   workbox: {
-    //     globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg}'],
-    //   }
-    // }),
     qrCodePlugin()
   ],
   resolve: {
@@ -89,9 +41,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
+  // optimizeDeps: {
+  //   exclude: ['lucide-react'],
+  // },
   server: {
     host: true, // required to expose local IP
     port: 5173,
