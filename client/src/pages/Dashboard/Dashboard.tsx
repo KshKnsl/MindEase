@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, BarChart3, Book, Users } from 'lucide-react';
 import AIChat from './components/AIChat';
-import JournelEntry from './components/JournalEntry';
+import JournalEntry from './components/JournalEntry';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('ai');
@@ -87,6 +87,15 @@ const Dashboard = () => {
             <Users className="h-5 w-5 mx-auto group-hover:mx-0" />
             <span className="hidden group-hover:inline-block">Community</span>
           </button>
+          <button
+            onClick={() => setActiveTab('journal')}
+            className={`flex items-center space-x-2 p-2 rounded-md w-full ${
+              activeTab === 'journal' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
+            }`}
+          >
+            <Book className="h-5 w-5 mx-auto group-hover:mx-0" />
+            <span className="hidden group-hover:inline-block">Journal</span>
+          </button>
         </div>
       </div>
 
@@ -103,6 +112,7 @@ const Dashboard = () => {
           transition={{ duration: 0.5 }}
         >
           {activeTab === 'ai' && <AIChat />}
+          {activeTab === 'journal' && <JournalEntry />}
           {activeTab === 'analytics' && <div>Analytics Content</div>}
           {activeTab === 'resources' && <div>Resources Content</div>}
           {activeTab === 'community' && <div>Community Content</div>}

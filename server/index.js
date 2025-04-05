@@ -7,13 +7,13 @@ import jwt from 'jsonwebtoken';
 import morgan from 'morgan';
 import { User } from './models/User.js';
 import { router as authRoutes } from './routes/auth.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 dotenv.config(); 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
 app.use(morgan('dev')); 
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mindease';
@@ -50,6 +50,29 @@ app.get('/api/user/data', auth, async (req, res) => {
         res.json(user);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching user data' });
+    }
+});
+
+// Simplified Gemini API implementation
+const apikey = process.env.GEMINI_API_KEY || '';
+const genAI = new GoogleGenerativeAI(apikey);
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+app.post('/api/genai/ask', async (req, res) => {
+    try {
+        const { prompt } = req.body;
+        if (!prompt) {
+            return res.status(400).json({ error: 'Prompt is required.' });
+        }
+
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+        const text = response.text();
+        
+        res.json({ response: text });
+    } catch (error) {
+        console.error('Error interacting with Gemini:', error.message);
+        res.status(500).json({ error: 'Failed to process the request.' });
     }
 });
 
