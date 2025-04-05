@@ -1,4 +1,5 @@
 import { ElevenLabsClient } from "elevenlabs";
+import { Repeat } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 
 interface TextToSpeechProps {
@@ -71,7 +72,19 @@ const TextToSpeech = ({ text }: TextToSpeechProps) => {
         <div>
             {loading && <p>Loading...</p>}
             {error && <p>Error: {error}</p>}
-            <audio ref={audioRef} controls />
+            {!loading && !error && (
+            <button
+                onClick={() => {
+                if (audioRef.current) {
+                    audioRef.current.play();
+                }
+                }}
+                className="flex items-center"
+            >
+                <Repeat className="h-3 w-3 mr-1" /> Listen
+            </button>
+            )}
+            <audio ref={audioRef} style={{ display: "none" }} />
         </div>
     );
 };
