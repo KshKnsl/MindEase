@@ -4,79 +4,88 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import { UserProfile } from "../models/UserProfile.js";
 import { User } from "../models/User.js";
+import dotenv from "dotenv";
 
+dotenv.config();
 const router = express.Router();
 
 router.post("/chat", async (req, res) => {
-    try {
-        var { prompt, userId } = req.body;
-        const token = userId;
-        console.log('Token:', token);
-        if (!token) {
-            return res.status(401).json({ error: 'No token provided. Please authenticate.' });
-        }
-        
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-        if (!decoded || !decoded.id) {
-            return res.status(401).json({ error: 'Invalid token. Please authenticate.' });
-        }
+  try {
+    var { prompt, userId } = req.body;
+    const token = userId;
+    console.log("Token:", token);
+    if (!token) {
+      return res
+        .status(401)
+        .json({ error: "No token provided. Please authenticate." });
+    }
 
-        userId = decoded.id;
-        console.log("Decoded userId:", userId);
-        console.log("Received request body:", req.body);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "your-secret-key"
+    );
+    if (!decoded || !decoded.id) {
+      return res
+        .status(401)
+        .json({ error: "Invalid token. Please authenticate." });
+    }
 
-        const user = await User.findById(userId); // userId should be converted to ObjectId earlier
+    userId = decoded.id;
+    console.log("Decoded userId:", userId);
+    console.log("Received request body:", req.body);
 
-if (!user) {
-  return res.status(404).json({ error: "User not found" });
-}
+    const user = await User.findById(userId); // userId should be converted to ObjectId earlier
 
-const summary = user.summary || "No summary available";
-console.log("User summary:", summary);
-        console.log("Received request:");
-        const apikey = process.env.YOUR_AIMLAPI_KEY;
-        const response = await fetch('https://api.aimlapi.com/v1/embeddings', {
-            method: 'POST',
-            headers: {
-                "Authorization": `Bearer ${apikey}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "model": "text-embedding-ada-002",
-                "input": "text",
-                "encoding_format": "float"
-            })
-        });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-        if (!response.ok) {
-            throw new Error("Failed to fetch embedding");
-        }
-        const embedJson = await response.json();
-        const vector = embedJson.data[0].embedding;
+    const summary = user.summary || "No summary available";
+    console.log("User summary:", summary);
+    console.log("Received request:");
+    const apikey = process.env.YOUR_AIMLAPI_KEY;
+    const response = await fetch("https://api.aimlapi.com/v1/embeddings", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apikey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "text-embedding-ada-002",
+        input: "text",
+        encoding_format: "float",
+      }),
+    });
 
-        console.log("Embedding response:", response);
+    if (!response.ok) {
+      throw new Error("Failed to fetch embedding");
+    }
+    const embedJson = await response.json();
+    const vector = embedJson.data[0].embedding;
 
-        const similarThoughts = await Response.aggregate([
-            {
-                $vectorSearch: {
-                    index: "yourVectorIndexName",
-                    path: "embedding",
-                    queryVector: vector,
-                    numCandidates: 100,
-                    k: 5,
-                    limit: 5
-                }
-            },
-            {
-                $match: { userId: new mongoose.Types.ObjectId(userId) }
-            }
-        ]);
+    console.log("Embedding response:", response);
 
-        const context = similarThoughts.map(item =>
-            `User: "${item.prompt}"\nAI: "${item.response}"`
-        ).join("\n\n");
+    const similarThoughts = await Response.aggregate([
+      {
+        $vectorSearch: {
+          index: "yourVectorIndexName",
+          path: "embedding",
+          queryVector: vector,
+          numCandidates: 100,
+          k: 5,
+          limit: 5,
+        },
+      },
+      {
+        $match: { userId: new mongoose.Types.ObjectId(userId) },
+      },
+    ]);
 
-        const finalPrompt = `
+    const context = similarThoughts
+      .map((item) => `User: "${item.prompt}"\nAI: "${item.response}"`)
+      .join("\n\n");
+
+    const finalPrompt = `
         You are a supportive AI emotional twin. Based on the user's past experiences, emotional patterns, and their personal summary, help them now.
         
         User summary:
@@ -88,11 +97,11 @@ console.log("User summary:", summary);
         New prompt:
         "${prompt}"
         `;
-        console.log("Final Prompt:", finalPrompt);        
+    console.log("Final Prompt:", finalPrompt);
 
-        console.log("Prompt:", prompt);
+    console.log("Prompt:", prompt);
 
-        const aiRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/genai/ask`, {
+        const aiRes = await fetch(`${process.env.BACKEND_URL}/api/genai/ask`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -100,41 +109,64 @@ console.log("User summary:", summary);
             body: JSON.stringify({ prompt: finalPrompt }),
         });
 
-        if (!aiRes.ok) {
-            throw new Error("Failed to fetch AI response");
-        }
-
-        const aiResponse = await aiRes.json();
-        console.log("AI Response:", aiResponse.response);
-
-        // 3. Store in MongoDB
-        const newResponse = await Response.create({
-            userId: new mongoose.Types.ObjectId(userId),
-            prompt,
-            response: aiResponse.response,
-            embedding: vector
-        });
-        console.log("Stored Response:", newResponse);
-
-        const userProfile = await UserProfile.findOneAndUpdate(
-            { userId: new mongoose.Types.ObjectId(userId) }, // Convert userId to ObjectId
-            {
-                $push: {
-                    responses: {
-                        question: prompt,
-                        answer: aiResponse.response,
-                    },
-                },
-                $set: { updatedAt: Date.now() }, // Update the updatedAt field
-            },
-            { new: true, upsert: true } // Create a new document if it doesn't exist
-        );
-
-        res.status(200).json(aiResponse.response);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: "Failed to process AI response" });
+    if (!aiRes.ok) {
+      throw new Error("Failed to fetch AI response");
     }
+
+    const aiResponse = await aiRes.json();
+    console.log("AI Response:", aiResponse.response);
+
+    // Analyze mood from the conversation
+    const moodAnalysisPrompt = `Based on this conversation, which mood best describes it? Reply with exactly one word from these options: happy, sad, anxious, angry, depressed, neutral.
+    User: ${prompt}
+    AI: ${aiResponse.response}`;
+
+    const moodRes = await fetch(`${process.env.BACKEND_URL}/api/genai/ask`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: moodAnalysisPrompt }),
+    });
+
+    if (!moodRes.ok) {
+        throw new Error("Failed to analyze mood");
+    }
+
+    const moodAnalysis = await moodRes.json();
+    const detectedMood = moodAnalysis.response.toLowerCase().trim();
+
+    // 3. Store in MongoDB with mood
+    const newResponse = await Response.create({
+      userId: new mongoose.Types.ObjectId(userId),
+      prompt,
+      response: aiResponse.response,
+      embedding: vector,
+      moodTag: detectedMood
+    });
+    console.log("Stored Response with mood:", newResponse);
+
+    // Update user profile with mood
+    const userProfile = await UserProfile.findOneAndUpdate(
+      { userId: new mongoose.Types.ObjectId(userId) }, // Convert userId to ObjectId
+      {
+        $push: {
+          responses: {
+            question: prompt,
+            answer: aiResponse.response,
+            mood: detectedMood
+          },
+        },
+        $set: { updatedAt: Date.now() }, // Update the updatedAt field
+      },
+      { new: true, upsert: true } // Create a new document if it doesn't exist
+    );
+
+    res.status(200).json(aiResponse.response);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to process AI response" });
+  }
 });
 
 export { router };
