@@ -155,14 +155,6 @@ const faqs = [
   },
 ]
 
-
-const stats = [
-  { value: "87%", label: "Users report reduced stress levels" },
-  { value: "92%", label: "Improvement in task completion" },
-  { value: "3.5h", label: "Average weekly time saved" },
-  { value: "250k+", label: "Active users worldwide" },
-]
-
 export default function LandingPage() {
   const [email, setEmail] = useState('');
 
@@ -233,19 +225,7 @@ export default function LandingPage() {
       {/* Stats Section */}
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <div className="text-4xl font-bold text-purple-600 mb-2">{stat.value}</div>
-                <p className="text-gray-600">{stat.label}</p>
-              </motion.div>
-            ))}
-          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center"></div>
         </div>
       </section>
 
