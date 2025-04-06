@@ -114,20 +114,6 @@ export default function AIChat() {
     }]);
 
     try {
-      // First, update user streak whenever they interact with the AI
-      try {
-        await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/streak`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        // We don't need to do anything with the response
-      } catch (err) {
-        // Silently fail - streak update shouldn't interrupt the chat flow
-        console.error('Error updating streak:', err);
-      }
-      
       console.log('Checking if message is a plan request');
       const planCheckRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/planner/ask`, {
         method: 'POST',
@@ -187,7 +173,6 @@ export default function AIChat() {
       
       const aiResponseId = (Date.now() + 2).toString();
       
-      // Make sure response text is a string
       const responseText = typeof data === 'string' 
         ? data 
         : typeof data === 'object' && data !== null && 'response' in data
@@ -305,9 +290,8 @@ export default function AIChat() {
                     <div className="mt-2">
                       <Testing 
                         text={message.text}
-                        autoPlay={!message.hasBeenPlayed} // Auto-play if not played before
+                        autoPlay={!message.hasBeenPlayed}
                         onPlayed={() => {
-                          // Mark message as played after auto-play
                           if (!message.hasBeenPlayed) {
                             setMessages(prev => 
                               prev.map(msg => 
