@@ -19,6 +19,9 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev')); 
 
+app.get('/', (req, res) => {
+    res.send('Welcome to MindEase API!');
+});
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mindease';
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
     .then(() => console.log('Connected to MongoDB'))
