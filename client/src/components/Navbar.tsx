@@ -1,23 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, Brain } from 'lucide-react';
+import { Button } from './ui/button';
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  Box
-} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import PsychologyIcon from '@mui/icons-material/Psychology';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./ui/sheet";
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -29,89 +23,80 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
-    setIsMobileMenuOpen(false);
-    
     navigate('/');
   };
 
-  const isActive = (path: string) => location.pathname === path;
-
   return (
-    <AppBar position="static" color="default" elevation={1}>
-      <Toolbar>
-        <Box display="flex" alignItems="center" component={Link} to="/" sx={{ textDecoration: 'none', color: 'inherit' }}>
-          <PsychologyIcon sx={{ mr: 1 }} color="primary" />
-          <Typography variant="h6" color="inherit" noWrap>
-            MindEase
-          </Typography>
-        </Box>
+    <nav className="border-b bg-white">
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between">
+          <Link to="/" className="flex items-center space-x-2">
+            <Brain className="h-6 w-6 text-purple-600" />
+            <span className="text-xl font-semibold">MindEase</span>
+          </Link>
 
-        <Box sx={{ flexGrow: 1 }} />
-
-        {/* Desktop Menu */}
-        <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-          <Button color="inherit" component={Link} to="/dashboard">
-            Dashboard
-          </Button>
-          <Button color="inherit" component={Link} to="/mood-tracker">
-            Mood Tracker
-          </Button>
-          {!isLoggedIn ? (
-            <>
-              <Button color="inherit" component={Link} to="/register">
-                Register
-              </Button>
-              <Button variant="contained" color="primary" component={Link} to="/login">
-                Login
-              </Button>
-            </>
-          ) : (
-            <Button color="inherit" onClick={handleLogout}>
-              Logout
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Button variant="ghost" asChild>
+              <Link to="/dashboard">Dashboard</Link>
             </Button>
-          )}
-        </Box>
+            <Button variant="ghost" asChild>
+              <Link to="/mood-tracker">Mood Tracker</Link>
+            </Button>
+            {!isLoggedIn ? (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link to="/register">Register</Link>
+                </Button>
+                <Button variant="default" asChild>
+                  <Link to="/login">Login</Link>
+                </Button>
+              </>
+            ) : (
+              <Button variant="ghost" onClick={handleLogout}>
+                Logout
+              </Button>
+            )}
+          </div>
 
-        {/* Mobile Menu Button */}
-        <IconButton
-          sx={{ display: { xs: 'flex', md: 'none' } }}
-          edge="end"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          <MenuIcon />
-        </IconButton>
-      </Toolbar>
-
-      {/* Mobile Menu Drawer */}
-      <Drawer
-        anchor="right"
-        open={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      >
-        <List sx={{ width: 250 }}>
-          <ListItem component={Link} to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} sx={{ cursor: 'pointer' }}>
-            <ListItemText primary="Dashboard" />
-          </ListItem>
-          <ListItem component={Link} to="/mood-tracker" onClick={() => setIsMobileMenuOpen(false)} sx={{ cursor: 'pointer' }}>
-            <ListItemText primary="Mood Tracker" />
-          </ListItem>
-          {!isLoggedIn ? (
-            <>
-              <ListItem component={Link} to="/register" onClick={() => setIsMobileMenuOpen(false)} sx={{ cursor: 'pointer' }}>
-                <ListItemText primary="Register" />
-              </ListItem>
-              <ListItem component={Link} to="/login" onClick={() => setIsMobileMenuOpen(false)} sx={{ cursor: 'pointer' }}>
-                <ListItemText primary="Login" />
-              </ListItem>
-            </>
-          ) : (
-            <ListItem onClick={handleLogout} sx={{ cursor: 'pointer' }}>
-              <ListItemText primary="Logout" />
-            </ListItem>
-          )}
-        </List>
-      </Drawer>
-    </AppBar>
+          {/* Mobile Menu */}
+          <Sheet>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col space-y-4 mt-4">
+                <Button variant="ghost" asChild>
+                  <Link to="/dashboard">Dashboard</Link>
+                </Button>
+                <Button variant="ghost" asChild>
+                  <Link to="/mood-tracker">Mood Tracker</Link>
+                </Button>
+                {!isLoggedIn ? (
+                  <>
+                    <Button variant="ghost" asChild>
+                      <Link to="/register">Register</Link>
+                    </Button>
+                    <Button variant="default" asChild>
+                      <Link to="/login">Login</Link>
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="ghost" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </nav>
   );
 };
 
