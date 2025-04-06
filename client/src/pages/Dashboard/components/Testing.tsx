@@ -17,20 +17,28 @@ const TextToSpeech = ({ text, autoPlay = false, onPlayed }: TextToSpeechProps) =
     
     // Generate speech
     const generateSpeech = async () => {
-        if (loading) return;
-        
-        setLoading(true);
-        
-        try {
-            const client = new ElevenLabsClient({ 
-                apiKey: import.meta.env.VITE_ELEVENLABS_API_KEY 
-            });
+            if (loading) return;
             
-            const result = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
-                output_format: "mp3_44100_128",
-                text: text,
-                model_id: "eleven_multilingual_v2"
-            });
+            setLoading(true);
+            
+            try {
+                // Make sure the API key is properly set in your environment variables
+                const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+                
+                if (!apiKey) {
+                    throw new Error("ElevenLabs API key is missing");
+                }
+                
+                const client = new ElevenLabsClient({ 
+                    apiKey: apiKey
+                });
+                
+                // Use the correct voice ID and parameters
+                const result = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
+                    output_format: "mp3_44100_128",
+                    text: text,
+                    model_id: "eleven_multilingual_v2"
+                });
             
             // Convert the stream response to a blob and create a URL
             const chunks: Uint8Array[] = [];
