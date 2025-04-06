@@ -366,7 +366,10 @@ export default function LandingPage() {
           </div>
           
           <div className="mt-16 text-center">
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button 
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+              onClick={() => window.location.href = '/login'}
+            >
               Get Started Now
             </Button>
           </div>
@@ -538,52 +541,6 @@ export default function LandingPage() {
           </div>
         </div>
         
-        {/* Quick Links */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-          <ul className="space-y-2">
-            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Features</a></li>
-            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Pricing</a></li>
-            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">About Us</a></li>
-            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Testimonials</a></li>
-            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact</a></li>
-          </ul>
-        </div>
-        
-        {/* Legal */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Legal</h3>
-          <ul className="space-y-2">
-            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
-            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Cookie Policy</a></li>
-            <li><a href="#" className="text-gray-400 hover:text-white transition-colors">GDPR Compliance</a></li>
-          </ul>
-        </div>
-        
-        {/* Newsletter */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Subscribe to our newsletter</h3>
-          <p className="text-gray-400 mb-4">
-            Stay updated with the latest features and releases.
-          </p>
-          <form onSubmit={handleSubscribe} className="flex">
-            <input 
-          type="email" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          placeholder="Enter your email" 
-          required
-          className="px-4 py-2 w-full bg-gray-800 border border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-white"
-            />
-            <Button 
-          type="submit" 
-          className="bg-purple-600 hover:bg-purple-700 rounded-l-none"
-            >
-          Subscribe
-            </Button>
-          </form>
-        </div>
           </div>
           
           <div className="border-t border-gray-800 pt-8">
