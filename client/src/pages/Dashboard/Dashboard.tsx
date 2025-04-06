@@ -94,7 +94,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-purple-50 flex">
+    <div className="max-h-screen h-[800px] bg-purple-50 flex">
       {/* Sidebar */}
       <div className="group relative bg-white shadow-md">
         <div className="h-full flex flex-col items-center py-4 space-y-4 w-16 group-hover:w-48 transition-all duration-300 overflow-hidden">
@@ -141,9 +141,9 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1">
         {errorMessage && (
-          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+          <div className="bg-red-100 text-red-700 rounded-md">
             {errorMessage}
           </div>
         )}
