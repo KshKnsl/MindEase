@@ -116,15 +116,37 @@ router.post("/chat", async (req, res) => {
     const aiResponse = await aiRes.json();
     console.log("AI Response:", aiResponse.response);
 
-    // 3. Store in MongoDB
+    // Analyze mood from the conversation
+    const moodAnalysisPrompt = `Based on this conversation, which mood best describes it? Reply with exactly one word from these options: happy, sad, anxious, angry, depressed, neutral.
+    User: ${prompt}
+    AI: ${aiResponse.response}`;
+
+    const moodRes = await fetch(`${process.env.BACKEND_URL}/api/genai/ask`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: moodAnalysisPrompt }),
+    });
+
+    if (!moodRes.ok) {
+        throw new Error("Failed to analyze mood");
+    }
+
+    const moodAnalysis = await moodRes.json();
+    const detectedMood = moodAnalysis.response.toLowerCase().trim();
+
+    // 3. Store in MongoDB with mood
     const newResponse = await Response.create({
       userId: new mongoose.Types.ObjectId(userId),
       prompt,
       response: aiResponse.response,
       embedding: vector,
+      moodTag: detectedMood
     });
-    console.log("Stored Response:", newResponse);
+    console.log("Stored Response with mood:", newResponse);
 
+    // Update user profile with mood
     const userProfile = await UserProfile.findOneAndUpdate(
       { userId: new mongoose.Types.ObjectId(userId) }, // Convert userId to ObjectId
       {
@@ -132,6 +154,7 @@ router.post("/chat", async (req, res) => {
           responses: {
             question: prompt,
             answer: aiResponse.response,
+            mood: detectedMood
           },
         },
         $set: { updatedAt: Date.now() }, // Update the updatedAt field
