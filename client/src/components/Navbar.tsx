@@ -1,6 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Brain, Menu, X } from 'lucide-react';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Box
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import PsychologyIcon from '@mui/icons-material/Psychology';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -24,141 +37,81 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-md top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2 group">
-              <Brain className="h-8 w-8 text-purple-600 group-hover:text-purple-700 transition-colors" />
-              <span className="text-xl font-bold text-gray-900 group-hover:text-purple-700 transition-colors">MindEase</span>
-            </Link>
-          </div>
+    <AppBar position="static" color="default" elevation={1}>
+      <Toolbar>
+        <Box display="flex" alignItems="center" component={Link} to="/" sx={{ textDecoration: 'none', color: 'inherit' }}>
+          <PsychologyIcon sx={{ mr: 1 }} color="primary" />
+          <Typography variant="h6" color="inherit" noWrap>
+            MindEase
+          </Typography>
+        </Box>
 
-          {/* Desktop navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link 
-              to="/dashboard" 
-              className={`font-medium transition-colors ${
-                isActive('/dashboard') 
-                  ? 'text-purple-700 border-b-2 border-purple-600' 
-                  : 'text-gray-700 hover:text-purple-600'
-              }`}
-            >
-              Dashboard
-            </Link>
-            <Link 
-              to="/mood-tracker" 
-              className={`font-medium transition-colors ${
-                isActive('/mood-tracker') 
-                  ? 'text-purple-700 border-b-2 border-purple-600' 
-                  : 'text-gray-700 hover:text-purple-600'
-              }`}
-            >
-              Mood Tracker
-            </Link>
-            
-            {!isLoggedIn ? (
-              <>
-                <Link 
-                  to="/register" 
-                  className={`font-medium transition-colors ${
-                    isActive('/register') 
-                      ? 'text-purple-700 border-b-2 border-purple-600' 
-                      : 'text-gray-700 hover:text-purple-600'
-                  }`}
-                >
-                  Register
-                </Link>
-                <Link 
-                  to="/login" 
-                  className="bg-purple-600 text-white px-5 py-2 rounded-md hover:bg-purple-700 transition-colors font-medium shadow-sm hover:shadow-md"
-                >
-                  Login
-                </Link>
-              </>
-            ) : (
-              <button 
-                onClick={handleLogout}
-                className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
-              >
-                Logout
-              </button>
-            )}
-          </div>
+        <Box sx={{ flexGrow: 1 }} />
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-700 hover:text-purple-600 focus:outline-none"
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-        </div>
-      </div>
+        {/* Desktop Menu */}
+        <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+          <Button color="inherit" component={Link} to="/dashboard">
+            Dashboard
+          </Button>
+          <Button color="inherit" component={Link} to="/mood-tracker">
+            Mood Tracker
+          </Button>
+          {!isLoggedIn ? (
+            <>
+              <Button color="inherit" component={Link} to="/register">
+                Register
+              </Button>
+              <Button variant="contained" color="primary" component={Link} to="/login">
+                Login
+              </Button>
+            </>
+          ) : (
+            <Button color="inherit" onClick={handleLogout}>
+              Logout
+            </Button>
+          )}
+        </Box>
 
-      {/* Mobile menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-white px-4 py-2 shadow-lg">
-          <div className="flex flex-col space-y-3 pb-3">
-            <Link 
-              to="/dashboard" 
-              className={`px-2 py-2 rounded-md ${
-                isActive('/dashboard') 
-                  ? 'bg-purple-50 text-purple-700 font-medium' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Dashboard
-            </Link>
-            <Link 
-              to="/mood-tracker" 
-              className={`px-2 py-2 rounded-md ${
-                isActive('/mood-tracker') 
-                  ? 'bg-purple-50 text-purple-700 font-medium' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Mood Tracker
-            </Link>
-            
-            {!isLoggedIn ? (
-              <>
-                <Link 
-                  to="/register" 
-                  className={`px-2 py-2 rounded-md ${
-                    isActive('/register') 
-                      ? 'bg-purple-50 text-purple-700 font-medium' 
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Register
-                </Link>
-                <Link 
-                  to="/login" 
-                  className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 text-center"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-              </>
-            ) : (
-              <button 
-                onClick={handleLogout}
-                className="text-left px-2 py-2 text-gray-700 hover:bg-gray-50 rounded-md w-full"
-              >
-                Logout
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </nav>
+        {/* Mobile Menu Button */}
+        <IconButton
+          sx={{ display: { xs: 'flex', md: 'none' } }}
+          edge="end"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          <MenuIcon />
+        </IconButton>
+      </Toolbar>
+
+      {/* Mobile Menu Drawer */}
+      <Drawer
+        anchor="right"
+        open={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+      >
+        <List sx={{ width: 250 }}>
+          <ListItem button component={Link} to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+            <ListItemText primary="Dashboard" />
+          </ListItem>
+          <ListItem button component={Link} to="/mood-tracker" onClick={() => setIsMobileMenuOpen(false)}>
+            <ListItemText primary="Mood Tracker" />
+          </ListItem>
+          {!isLoggedIn ? (
+            <>
+              <ListItem button component={Link} to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                <ListItemText primary="Register" />
+              </ListItem>
+              <ListItem button component={Link} to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                <ListItemText primary="Login" />
+              </ListItem>
+            </>
+          ) : (
+            <ListItem button onClick={handleLogout}>
+              <ListItemText primary="Logout" />
+            </ListItem>
+          )}
+        </List>
+      </Drawer>
+    </AppBar>
   );
 };
 

@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { Button } from '../components/ui/button';
+import { 
+  Button, 
+  TextField, 
+  Container, 
+  Typography, 
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Paper
+} from '@mui/material';
 
 const Planner: React.FC = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -32,45 +43,64 @@ const Planner: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen space-y-4">
-      <h1 className="text-3xl font-bold">Planner</h1>
-      <textarea
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        className="w-96 h-32 p-2 border rounded"
-        placeholder="Enter your event details..."
-      />
-      <Button onClick={handleAddEvent}>Process Request</Button>
+    <Container maxWidth="md">
+      <Box display="flex" flexDirection="column" alignItems="center" minHeight="100vh" py={4} gap={2}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Planner
+        </Typography>
+        
+        <TextField
+          multiline
+          rows={4}
+          fullWidth
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="Enter your event details..."
+          variant="outlined"
+        />
+        
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={handleAddEvent}
+        >
+          Process Request
+        </Button>
 
-      {showPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-xl">
+        <Dialog open={showPopup} onClose={() => setShowPopup(false)}>
+          <Paper>
             {isEvent ? (
               <>
-                <h2 className="text-xl font-semibold mb-4">Event Created!</h2>
-                <p className="mb-4">Your event has been prepared for Google Calendar.</p>
-                <div className="flex space-x-4">
+                <DialogTitle>Event Created!</DialogTitle>
+                <DialogContent>
+                  <Typography>Your event has been prepared for Google Calendar.</Typography>
+                </DialogContent>
+                <DialogActions>
                   <Button onClick={() => window.open(calendarUrl, '_blank')}>
                     Open Calendar
                   </Button>
-                  <Button onClick={() => setShowPopup(false)} variant="outline">
+                  <Button onClick={() => setShowPopup(false)} variant="outlined">
                     Close
                   </Button>
-                </div>
+                </DialogActions>
               </>
             ) : (
               <>
-                <h2 className="text-xl font-semibold mb-4">Not an Event</h2>
-                <p className="mb-4">Your request was not recognized as an event.</p>
-                <Button onClick={() => setShowPopup(false)} variant="outline">
-                  Close
-                </Button>
+                <DialogTitle>Not an Event</DialogTitle>
+                <DialogContent>
+                  <Typography>Your request was not recognized as an event.</Typography>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setShowPopup(false)} variant="outlined">
+                    Close
+                  </Button>
+                </DialogActions>
               </>
             )}
-          </div>
-        </div>
-      )}
-    </div>
+          </Paper>
+        </Dialog>
+      </Box>
+    </Container>
   );
 };
 
