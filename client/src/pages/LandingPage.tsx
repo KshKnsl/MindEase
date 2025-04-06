@@ -348,17 +348,6 @@ export default function LandingPage() {
         ))}
           </div>
           
-          <div className="mt-16 text-center">
-            <Button 
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-              onClick={() => window.location.href = '/login'}
-            >
-              Get Started Now
-            </Button>
-        <Button className="bg-white hover:bg-purple-50 text-purple-600" onClick={() => window.location.href = '/register'}>
-          Get Started Now
-        </Button>
-          </div>
         </div>
       </section>
 
