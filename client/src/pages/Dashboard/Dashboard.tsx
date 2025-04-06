@@ -20,7 +20,7 @@ const Dashboard = () => {
           return;
         }
 
-        const response = await fetch('http://localhost:5000/api/user/data', {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/data`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -51,7 +51,7 @@ const Dashboard = () => {
         const token = localStorage.getItem('token');
         if (!token) return;
         
-        const response = await fetch('http://localhost:5000/api/user/profile', {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

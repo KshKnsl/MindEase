@@ -115,7 +115,7 @@ export default function AIChat() {
 
     try {
       console.log('Checking if message is a plan request');
-      const planCheckRes = await fetch('http://localhost:5000/api/planner/ask', {
+      const planCheckRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/planner/ask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,7 +158,7 @@ export default function AIChat() {
       }
       
       console.log('Not a planning request, continuing with normal chat');
-      const res = await fetch('http://localhost:5000/api/response/chat', {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/response/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
