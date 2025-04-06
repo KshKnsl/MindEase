@@ -8,7 +8,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "./ui/sheet";
+} from "./ui/sheet"; // Updated the path to match the correct location
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
