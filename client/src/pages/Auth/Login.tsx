@@ -7,16 +7,21 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // Add loading state
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true); // Set loading to true
+    setError(''); // Clear previous errors
     try {
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, { email, password });
       localStorage.setItem('token', response.data.token);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed');
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
@@ -60,20 +65,18 @@ function Login() {
               required
             />
           </div>
-          <div className="flex items-center justify-between mb-6">
-            <div className="text-sm">
-            
-            </div>
-          </div>
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={loading} // Disable button when loading
+            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+              loading ? 'bg-purple-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
+            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
           >
-            Sign in
+            {loading ? 'Signing in...' : 'Sign in'} {/* Show loading text */}
           </button>
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
+              Don't have an account?{' '}
               <Link to="/register" className="text-purple-600 hover:underline font-medium">
                 Create a new account
               </Link>
