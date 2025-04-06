@@ -81,7 +81,7 @@ const GroundingExercise: React.FC<GroundingExerciseProps> = ({ moodColor = {bg: 
             setStep(step + 1);
         } else {
             setCompleted(true);
-            setTimeout(() => navigate("/"), 3000);
+            setTimeout(() => navigate("/dashboard"), 3000);
         }
     };
 
