@@ -8,7 +8,7 @@ import { User } from './models/User.js';
 import { router as authRoutes } from './routes/auth.js';
 import { router as questionRoutes } from './routes/questions.js';
 import {router as responseRoutes} from './routes/Response.js';
-import {router as moodRoutes} from './routes/moodTracker.js';
+import {router as moodRoutes} from './routes/MoodTracker.js';
 import { userRouter } from './routes/user.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import plannerRouter from './routes/Planner.js';
