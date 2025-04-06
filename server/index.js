@@ -83,18 +83,42 @@ app.get('/api/user/data', auth, async (req, res) => {
 // Add route for user statistics
 app.get('/api/user/stats', auth, async (req, res) => {
     try {
-        const streakResponse = await fetch(`${req.protocol}://${req.get('host')}/api/user/streak/stats`, {
-            headers: {
-                'Authorization': req.headers.authorization
-            }
+        // We'll skip the fetch to a local endpoint and directly implement stats logic here
+        // This avoids internal HTTP calls which can cause issues with environments like Render
+        const Response = (await import('./models/Response.js')).default;
+        
+        // Get total interactions count
+        const totalInteractions = await Response.countDocuments({ userId: req.userId });
+        
+        // Get mood entries count
+        const moodEntries = await Response.countDocuments({ 
+            userId: req.userId,
+            moodTag: { $exists: true, $ne: null }
         });
         
-        if (!streakResponse.ok) {
-            throw new Error('Failed to fetch user statistics');
+        // Count scheduled events (placeholder for now)
+        const eventsScheduled = 0;
+        
+        // Get streak data if available
+        let streakData = { currentStreak: 0, longestStreak: 0 };
+        try {
+            const { UserStreak } = await import('./models/UserStreak.js');
+            const streak = await UserStreak.findOne({ userId: req.userId });
+            if (streak) {
+                streakData.currentStreak = streak.currentStreak;
+                streakData.longestStreak = streak.longestStreak;
+            }
+        } catch (err) {
+            console.error('Error fetching streak data:', err);
+            // Continue with default streak values
         }
         
-        const stats = await streakResponse.json();
-        res.json(stats);
+        res.json({
+            totalInteractions,
+            moodEntries,
+            eventsScheduled,
+            ...streakData
+        });
     } catch (error) {
         console.error('Error fetching user stats:', error);
         res.status(500).json({ error: 'Failed to retrieve user statistics' });

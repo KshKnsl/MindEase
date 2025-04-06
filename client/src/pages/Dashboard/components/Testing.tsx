@@ -17,36 +17,30 @@ const TextToSpeech = ({ text, autoPlay = false, onPlayed }: TextToSpeechProps) =
     
     // Generate speech
     const generateSpeech = async () => {
-            if (loading) return;
+        if (loading) return;
+        
+        setLoading(true);
+        
+        try {
+            const client = new ElevenLabsClient({ 
+                apiKey: import.meta.env.VITE_ELEVENLABS_API_KEY 
+            });
+            console.log("Client initialized:", import.meta.env.VITE_ELEVENLABS_API_KEY);
+            console.log("Client initialized:", client);
             
-            setLoading(true);
+            const result = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
+                output_format: "mp3_44100_128",
+                text: text,
+                model_id: "eleven_multilingual_v2"
+            });
+            console.log("Audio stream:", result);
             
-            try {
-                // Make sure the API key is properly set in your environment variables
-                const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
-                
-                if (!apiKey) {
-                    throw new Error("ElevenLabs API key is missing");
-                }
-                
-                const client = new ElevenLabsClient({ 
-                    apiKey: apiKey
-                });
-                
-                // Use the correct voice ID and parameters
-                const result = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
-                    output_format: "mp3_44100_128",
-                    text: text,
-                    model_id: "eleven_multilingual_v2"
-                });
-            
-            // Convert the stream response to a blob and create a URL
             const chunks: Uint8Array[] = [];
             for await (const chunk of result) {
                 chunks.push(chunk);
             }
-            
-            // Combine chunks without using Buffer
+            console.log("Audio chunks:", chunks);
+
             const totalLength = chunks.reduce((acc, val) => acc + val.length, 0);
             const combinedArray = new Uint8Array(totalLength);
             let offset = 0;
@@ -55,17 +49,17 @@ const TextToSpeech = ({ text, autoPlay = false, onPlayed }: TextToSpeechProps) =
                 offset += chunk.length;
             }
             
+            console.log("Combined audio array:", combinedArray);
             const blob = new Blob([combinedArray], { type: "audio/mpeg" });
             const url = URL.createObjectURL(blob);
             
+            console.log("Audio URL:", url);
             setAudioUrl(url);
             
-            // Set the audio source and play it
             if (audioRef.current) {
                 audioRef.current.src = url;
                 audioRef.current.play();
                 
-                // If this is an auto-play, notify parent
                 if (!hasAutoPlayedRef.current && autoPlay) {
                     hasAutoPlayedRef.current = true;
                     onPlayed?.();
@@ -88,22 +82,18 @@ const TextToSpeech = ({ text, autoPlay = false, onPlayed }: TextToSpeechProps) =
     
     const handleGenerateSpeech = () => {
         if (audioUrl) {
-            // If we already have audio, just play it
             playAudio();
         } else {
-            // Otherwise generate new speech
             generateSpeech();
         }
     };
     
-    // Auto-play on first render if specified
     useEffect(() => {
         if (autoPlay && !hasAutoPlayedRef.current) {
             generateSpeech();
         }
     }, [autoPlay]);
     
-    // Clean up URL object when component unmounts
     useEffect(() => {
         return () => {
             if (audioUrl) {
@@ -112,7 +102,6 @@ const TextToSpeech = ({ text, autoPlay = false, onPlayed }: TextToSpeechProps) =
         };
     }, [audioUrl]);
     
-    // Handle audio ended event
     useEffect(() => {
         const audioElement = audioRef.current;
         
