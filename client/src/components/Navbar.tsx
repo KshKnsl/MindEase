@@ -47,16 +47,7 @@ const Navbar = () => {
             >
               Dashboard
             </Link>
-            <Link 
-              to="/mood-tracker" 
-              className={`font-medium transition-colors ${
-                isActive('/mood-tracker') 
-                  ? 'text-purple-700 border-b-2 border-purple-600' 
-                  : 'text-gray-700 hover:text-purple-600'
-              }`}
-            >
-              Mood Tracker
-            </Link>
+           
             
             {!isLoggedIn ? (
               <>

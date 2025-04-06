@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ShakeTimer from "./Shakeit";
+import Journel from "./Journel";
+import AffirmationWriter from "./Affirmation";
+import BreathingBubble from "./BreathingAnimation";
+import GroundingExercise from "./Exercise";
 
 type MoodInfo = {
   mood: "happy" | "sad" | "anxious" | "angry" | "depressed" | "neutral";
@@ -46,50 +51,19 @@ const MoodAction: React.FC = () => {
   const renderAction = (actionType: MoodInfo["actionType"]) => {
     switch (actionType) {
       case "positiveAffirmation":
-        return <textarea placeholder="Write something positive..." className="w-full p-2 border rounded" />;
+        return <AffirmationWriter />;
       case "drawCanvas":
         case "drawCanvas":
           return (
-            <canvas
-              id="drawingCanvas"
-              className="border rounded w-full h-64"
-              style={{ backgroundColor: "#f0f0f0" }}
-            ></canvas>
+            <Journel />
           );
       case "playBreathingAnimation":
         return (
-          <div className="flex flex-col items-center">
-            <p className="mb-2 text-gray-600">Follow the breathing animation below:</p>
-            <div className="w-32 h-32 border-4 border-blue-500 rounded-full animate-pulse"></div>
-            <p className="mt-4 text-gray-600">This will last for 2 minutes. Relax and breathe.</p>
-            <p className="mt-2 text-gray-600">
-              Time remaining: <span id="timer">2:00</span>
-            </p>
-          </div>
+          <BreathingBubble />
         );
         
-
-        useEffect(() => {
-          let timeLeft = 120; // 2 minutes in seconds
-          const timerElement = document.getElementById("timer");
-        
-          const interval = setInterval(() => {
-            if (timeLeft <= 0) {
-              clearInterval(interval);
-              return;
-            }
-            timeLeft -= 1;
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            if (timerElement) {
-              timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-            }
-          }, 1000);
-        
-          return () => clearInterval(interval); // Cleanup on component unmount
-        }, []);
       case "shakeCountdown":
-        return <p>Shake it out! Countdown starts... [10s timer]</p>;
+        return <p><ShakeTimer /></p>;
       case "playMusic":
         return (
           <audio controls autoPlay>
@@ -99,7 +73,7 @@ const MoodAction: React.FC = () => {
         );
       case "showQuote":
       default:
-        return <blockquote className="italic text-gray-600">"Peace begins with a smile." – Mother Teresa</blockquote>;
+        return <GroundingExercise />
     }
   };
 
