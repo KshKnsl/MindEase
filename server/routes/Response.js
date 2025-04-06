@@ -92,7 +92,7 @@ console.log("User summary:", summary);
 
         console.log("Prompt:", prompt);
 
-        const aiRes = await fetch('http://localhost:5000/api/genai/ask', {
+        const aiRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/genai/ask`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

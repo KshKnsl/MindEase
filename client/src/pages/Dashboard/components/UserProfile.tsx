@@ -41,7 +41,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
         const fetchUserProfile = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:5000/api/user/profile', {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/profile`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -80,7 +80,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
             try 
             {
                 const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:5000/api/genai/ask', {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/genai/ask`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
         setSavingProfile(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/user/profile', {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/profile`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
