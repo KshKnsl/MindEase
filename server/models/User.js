@@ -6,4 +6,8 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
 }, { timestamps: true });
 
+userSchema.add({
+  summary: { type: String, default: '' },
+});
+
 export const User = mongoose.model('User', userSchema);
