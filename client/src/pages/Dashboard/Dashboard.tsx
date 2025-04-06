@@ -100,6 +100,7 @@ const Dashboard = () => {
         <div className="h-full flex flex-col items-center py-4 space-y-4 w-16 group-hover:w-48 transition-all duration-300 overflow-hidden">
           <button
             onClick={() => setActiveTab('ai')}
+            data-tab="ai"
             className={`flex items-center space-x-2 p-2 rounded-md w-full ${
               activeTab === 'ai' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
             }`}
