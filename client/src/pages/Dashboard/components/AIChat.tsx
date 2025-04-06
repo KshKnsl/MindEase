@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Brain, User, Bot, Send, Calendar } from "lucide-react";
+import { Mic, MicOff, Brain, User, Bot, Send } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import VoiceWaveAnimation from "./voice-wave-animation";
 import ReactMarkdown from "react-markdown";
@@ -25,7 +25,7 @@ export default function AIChat() {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPlannerPopup, setShowPlannerPopup] = useState(false);
-  const [planDetails, setPlanDetails] = useState<any>(null);
+  const [_, setPlanDetails] = useState<any>(null);
   const [calendarUrl, setCalendarUrl] = useState<string | null>(null);
   
   const recognitionRef = useRef<any>(null);
