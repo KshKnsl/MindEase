@@ -51,9 +51,9 @@ const MoodAction: React.FC = () => {
   const renderAction = (actionType: MoodInfo["actionType"]) => {
     switch (actionType) {
       case "positiveAffirmation":
+
         return <AffirmationWriter />;
       case "drawCanvas":
-        case "drawCanvas":
           return (
             <Journel />
           );
@@ -62,6 +62,12 @@ const MoodAction: React.FC = () => {
           <BreathingBubble />
         );
         
+        return (
+          <textarea
+            placeholder="Write something positive..."
+            className="w-full p-2 border rounded"
+          />
+        );
       case "shakeCountdown":
         return <p><ShakeTimer /></p>;
       case "playMusic":
@@ -82,9 +88,13 @@ const MoodAction: React.FC = () => {
 
   return (
     <div className="p-4 bg-white shadow rounded-lg w-full max-w-lg mx-auto text-center">
-      <h2 className="text-xl font-bold mb-2">Your Current Mood: {moodInfo?.mood}</h2>
+      <h2 className="text-xl font-bold mb-2">
+        Your Current Mood: {moodInfo?.mood}
+      </h2>
       <p className="mb-4 text-gray-600">{moodInfo?.suggestion}</p>
-      <div className="mt-4">{moodInfo?.actionType && renderAction(moodInfo.actionType)}</div>
+      <div className="mt-4">
+        {moodInfo?.actionType && renderAction(moodInfo.actionType)}
+      </div>
     </div>
   );
 };
