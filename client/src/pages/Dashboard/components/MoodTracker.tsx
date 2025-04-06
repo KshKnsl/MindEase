@@ -1,252 +1,118 @@
-import React, { useState, useEffect, FC } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-// Define types for the component data and props
-export type MoodType = 'anxious' | 'sad' | 'happy' | 'angry' | 'focused' | 'neutral' | string;
-export type ActionType = 'playMedia' | 'openExercise' | 'breakTasks' | 'logGratitude';
-
-export interface MoodData {
-  mood: MoodType;
+type MoodInfo = {
+  mood: "happy" | "sad" | "anxious" | "angry" | "depressed" | "neutral";
   suggestion: string;
-  actionType: ActionType;
-  mediaLink?: string;
-  exerciseId?: string;
-}
+  actionType:
+    | "positiveAffirmation"
+    | "drawCanvas"
+    | "playBreathingAnimation"
+    | "shakeCountdown"
+    | "playMusic"
+    | "showQuote";
+};
 
-export interface TaskDecomposerModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export interface MoodActionHandlerProps {
-  userId?: string; // Optional user ID to fetch specific user data
-  endpoint?: string; // Optional custom endpoint
-  onActionComplete?: (actionType: ActionType) => void;
-  TaskDecomposerModal?: FC<TaskDecomposerModalProps>;
-}
-
-/**
- * MoodActionHandler - A component that fetches and displays user mood information and relevant actions
- * 
- * @param props Component props
- * @returns React component
- */
-const MoodActionHandler: FC<MoodActionHandlerProps> = ({ 
-  userId,
-  endpoint = '/api/mood-suggestions',
-  onActionComplete, 
-  TaskDecomposerModal 
-}) => {
-  const navigate = useNavigate();
-  const [moodData, setMoodData] = useState<MoodData | null>(null);
+const MoodAction: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-  
-  // Fetch mood data from the backend
+  const [moodInfo, setMoodInfo] = useState<MoodInfo | null>(null);
+  const [error, setError] = useState<string>("");
+
   useEffect(() => {
-    const fetchMoodData = async () => {
+    const fetchMoodAction = async () => {
       try {
-        setLoading(true);
-        const url = userId ? `${endpoint}?userId=${userId}` : endpoint;
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`Error fetching mood data: ${response.statusText}`);
-        }
-        
-        const data: MoodData = await response.json();
-        setMoodData(data);
-        setError(null);
+        const token = localStorage.getItem("token");
+        const res = await axios.post<MoodInfo>(
+          `${import.meta.env.VITE_BACKEND_URL}/api/mood/mood-action`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setMoodInfo(res.data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        console.error('Failed to fetch mood data:', err);
+        console.error(err);
+        setError("Couldn't fetch mood-based action.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMoodData();
-  }, [endpoint, userId]);
+    fetchMoodAction();
+  }, []);
 
-  // Trigger the fade-in animation when data is loaded
-  useEffect(() => {
-    if (moodData && !loading) {
-      setIsVisible(true);
-    }
-  }, [moodData, loading]);
-
-  // Background color based on mood
-  const getMoodColor = (mood: MoodType): string => {
-    const moodColors: Record<string, string> = {
-      anxious: 'bg-purple-50 border-purple-200',
-      sad: 'bg-blue-50 border-blue-200',
-      happy: 'bg-yellow-50 border-yellow-200',
-      angry: 'bg-red-50 border-red-200',
-      focused: 'bg-green-50 border-green-200',
-      neutral: 'bg-gray-50 border-gray-200'
-    };
-    
-    return moodColors[mood.toLowerCase()] || 'bg-gray-50 border-gray-200';
-  };
-
-  // Icon based on action type
-  const getActionIcon = (actionType: ActionType): string => {
+  const renderAction = (actionType: MoodInfo["actionType"]) => {
     switch (actionType) {
-      case 'playMedia':
-        return '▶️';
-      case 'openExercise':
-        return '🧘';
-      case 'breakTasks':
-        return '📋';
-      case 'logGratitude':
-        return '✨';
-      default:
-        return '➡️';
-    }
-  };
-
-  // Button text based on action type
-  const getButtonText = (actionType: ActionType): string => {
-    switch (actionType) {
-      case 'playMedia':
-        return 'Play Now';
-      case 'openExercise':
-        return 'Start Exercise';
-      case 'breakTasks':
-        return 'Break Down Tasks';
-      case 'logGratitude':
-        return 'Log Gratitude';
-      default:
-        return 'Take Action';
-    }
-  };
-
-  // Handle the action when button is clicked
-  const handleAction = (): void => {
-    if (!moodData) return;
-
-    switch (moodData.actionType) {
-      case 'playMedia':
-        if (moodData.mediaLink) {
-          window.open(moodData.mediaLink, '_blank', 'noopener,noreferrer');
-        }
-        break;
-      case 'openExercise':
-        if (moodData.exerciseId) {
-          navigate(`/exercises/${moodData.exerciseId}`);
-        }
-        break;
-      case 'breakTasks':
-        setShowModal(true);
-        break;
-      case 'logGratitude':
-        navigate('/gratitude-log');
-        break;
-      default:
-        console.warn('Unknown action type:', moodData.actionType);
-    }
-
-    if (onActionComplete) {
-      onActionComplete(moodData.actionType);
-    }
-  };
-
-  // Close the modal
-  const closeModal = (): void => {
-    setShowModal(false);
-  };
-
-  // Function to get mood emoji
-  const getMoodEmoji = (mood: MoodType): string => {
-    const moodEmojis: Record<string, string> = {
-      happy: '😊',
-      sad: '😔',
-      anxious: '😰',
-      angry: '😠',
-      focused: '🧐',
-      neutral: '😐'
-    };
-    
-    return moodEmojis[mood.toLowerCase()] || '😐';
-  };
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="rounded-lg shadow-md p-6 max-w-md mx-auto border bg-gray-50">
-        <div className="animate-pulse flex space-x-4">
-          <div className="flex-1 space-y-4 py-1">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-            </div>
-            <div className="h-10 bg-gray-200 rounded"></div>
+      case "positiveAffirmation":
+        return <textarea placeholder="Write something positive..." className="w-full p-2 border rounded" />;
+      case "drawCanvas":
+        case "drawCanvas":
+          return (
+            <canvas
+              id="drawingCanvas"
+              className="border rounded w-full h-64"
+              style={{ backgroundColor: "#f0f0f0" }}
+            ></canvas>
+          );
+      case "playBreathingAnimation":
+        return (
+          <div className="flex flex-col items-center">
+            <p className="mb-2 text-gray-600">Follow the breathing animation below:</p>
+            <div className="w-32 h-32 border-4 border-blue-500 rounded-full animate-pulse"></div>
+            <p className="mt-4 text-gray-600">This will last for 2 minutes. Relax and breathe.</p>
+            <p className="mt-2 text-gray-600">
+              Time remaining: <span id="timer">2:00</span>
+            </p>
           </div>
-        </div>
-      </div>
-    );
-  }
+        );
+        
 
-  // Error state
-  if (error || !moodData) {
-    return (
-      <div className="rounded-lg shadow-md p-6 max-w-md mx-auto border bg-red-50 text-red-600">
-        <h3 className="font-medium text-lg mb-2">Unable to load mood data</h3>
-        <p className="text-sm">{error || 'No data available'}</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="mt-4 py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
+        useEffect(() => {
+          let timeLeft = 120; // 2 minutes in seconds
+          const timerElement = document.getElementById("timer");
+        
+          const interval = setInterval(() => {
+            if (timeLeft <= 0) {
+              clearInterval(interval);
+              return;
+            }
+            timeLeft -= 1;
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            if (timerElement) {
+              timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+            }
+          }, 1000);
+        
+          return () => clearInterval(interval); // Cleanup on component unmount
+        }, []);
+      case "shakeCountdown":
+        return <p>Shake it out! Countdown starts... [10s timer]</p>;
+      case "playMusic":
+        return (
+          <audio controls autoPlay>
+            <source src="/relaxing-music.mp3" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        );
+      case "showQuote":
+      default:
+        return <blockquote className="italic text-gray-600">"Peace begins with a smile." – Mother Teresa</blockquote>;
+    }
+  };
+
+  if (loading) return <p>Loading mood-based action...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-      transition={{ duration: 0.5 }}
-      className={`rounded-lg shadow-md p-6 max-w-md mx-auto border ${getMoodColor(moodData.mood)}`}
-    >
-      <div className="flex items-center mb-4">
-        <div className="text-2xl mr-3">
-          {getMoodEmoji(moodData.mood)}
-        </div>
-        <h3 className="font-medium text-lg capitalize">{moodData.mood}</h3>
-      </div>
-
-      <motion.p 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-        className="text-gray-700 mb-6"
-      >
-        {moodData.suggestion}
-      </motion.p>
-
-      <motion.button
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.97 }}
-        onClick={handleAction}
-        className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium flex items-center justify-center"
-      >
-        <span className="mr-2">{getActionIcon(moodData.actionType)}</span>
-        {getButtonText(moodData.actionType)}
-      </motion.button>
-
-      {/* Render the task decomposer modal when needed */}
-      {TaskDecomposerModal && showModal && (
-        <TaskDecomposerModal isOpen={showModal} onClose={closeModal} />
-      )}
-    </motion.div>
+    <div className="p-4 bg-white shadow rounded-lg w-full max-w-lg mx-auto text-center">
+      <h2 className="text-xl font-bold mb-2">Your Current Mood: {moodInfo?.mood}</h2>
+      <p className="mb-4 text-gray-600">{moodInfo?.suggestion}</p>
+      <div className="mt-4">{moodInfo?.actionType && renderAction(moodInfo.actionType)}</div>
+    </div>
   );
 };
 
-export default MoodActionHandler;
+export default MoodAction;
