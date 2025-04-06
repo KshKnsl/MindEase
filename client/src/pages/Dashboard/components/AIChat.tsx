@@ -173,7 +173,6 @@ export default function AIChat() {
       
       const aiResponseId = (Date.now() + 2).toString();
       
-      // Make sure response text is a string
       const responseText = typeof data === 'string' 
         ? data 
         : typeof data === 'object' && data !== null && 'response' in data
@@ -289,11 +288,10 @@ export default function AIChat() {
                    typeof message.text === 'string' && 
                    message.text.trim() && (
                     <div className="mt-2">
-                      <Testing 
+                      {/* <Testing 
                         text={message.text}
-                        autoPlay={!message.hasBeenPlayed} // Auto-play if not played before
+                        autoPlay={!message.hasBeenPlayed}
                         onPlayed={() => {
-                          // Mark message as played after auto-play
                           if (!message.hasBeenPlayed) {
                             setMessages(prev => 
                               prev.map(msg => 
@@ -304,7 +302,7 @@ export default function AIChat() {
                             );
                           }
                         }}
-                      />
+                      /> */}
                     </div>
                   )}
                 </div>

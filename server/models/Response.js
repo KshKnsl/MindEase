@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const responseSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId, // or String if you're using custom IDs
+    type: mongoose.Schema.Types.ObjectId, 
     required: true,
     ref: "User"
   },

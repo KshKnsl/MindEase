@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, User } from 'lucide-react';
+import { Brain, User, BarChart2, Heart } from 'lucide-react';
 import AIChat from './components/AIChat';
 import UserProfile from './components/UserProfile';
 import MoodActionHandler from './components/MoodTracker';
+import Analytics from './components/Analytics';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string | null>(null);
@@ -93,7 +94,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-purple-50 flex">
+    <div className="max-h-screen h-[800px] bg-purple-50 flex">
       {/* Sidebar */}
       <div className="group relative bg-white shadow-md">
         <div className="h-full flex flex-col items-center py-4 space-y-4 w-16 group-hover:w-48 transition-all duration-300 overflow-hidden">
@@ -123,16 +124,26 @@ const Dashboard = () => {
               activeTab === 'mood' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
             }`}
           >
-            <Brain className="h-5 w-5 mx-auto group-hover:mx-0" />
+            <Heart className="h-5 w-5 mx-auto group-hover:mx-0" />
             <span className="hidden group-hover:inline-block">Mood</span>
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center space-x-2 p-2 rounded-md w-full ${
+              activeTab === 'analytics' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
+            }`}
+          >
+            <BarChart2 className="h-5 w-5 mx-auto group-hover:mx-0" />
+            <span className="hidden group-hover:inline-block">Analytics</span>
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1">
         {errorMessage && (
-          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+          <div className="bg-red-100 text-red-700 rounded-md">
             {errorMessage}
           </div>
         )}
@@ -144,6 +155,7 @@ const Dashboard = () => {
           {activeTab === 'ai' && <AIChat />}
           {activeTab === 'knowme' && <UserProfile userData={userData} />}
           {activeTab === 'mood' && <MoodActionHandler />}
+          {activeTab === 'analytics' && <Analytics />}
         </motion.div>
       </div>
     </div>
