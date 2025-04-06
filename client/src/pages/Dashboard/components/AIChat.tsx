@@ -288,7 +288,7 @@ export default function AIChat() {
                    typeof message.text === 'string' && 
                    message.text.trim() && (
                     <div className="mt-2">
-                      {/* <Testing 
+                       <Testing 
                         text={message.text}
                         autoPlay={!message.hasBeenPlayed}
                         onPlayed={() => {
@@ -302,7 +302,7 @@ export default function AIChat() {
                             );
                           }
                         }}
-                      /> */}
+                      /> 
                     </div>
                   )}
                 </div>
