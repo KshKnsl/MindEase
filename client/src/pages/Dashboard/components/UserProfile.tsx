@@ -287,6 +287,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
                 >
                     Take Assessment Again
                 </button>
+                <div className="mt-6 flex justify-center">
+                    <button
+                        onClick={() => {
+                            const aiButton = document.querySelector('button[data-tab="ai"]') as HTMLButtonElement;
+                            if (aiButton) aiButton.click();
+                        }}
+                        className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+                    >
+                        Chat with AI Twin
+                    </button>
+                </div>
             </motion.div>
         );
     }
