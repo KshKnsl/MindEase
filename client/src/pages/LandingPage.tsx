@@ -47,9 +47,9 @@ const features = [
     description: "Converts your scattered thoughts into actionable steps and timely reminders",
   },
   {
-    icon: <Map className="h-8 w-8 text-purple-600" />,
-    title: "Brain Mapping & Idea Sorting",
-    description: "Helps structure priorities and organize your mental landscape",
+    icon: <Shield className="h-8 w-8 text-purple-600" />,
+    title: "Data Security & Privacy",
+    description: "Your data is encrypted end-to-end, ensuring complete privacy and control over your information",
   },
 ]
 
