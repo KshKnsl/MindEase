@@ -114,6 +114,20 @@ export default function AIChat() {
     }]);
 
     try {
+      // First, update user streak whenever they interact with the AI
+      try {
+        await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/streak`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        // We don't need to do anything with the response
+      } catch (err) {
+        // Silently fail - streak update shouldn't interrupt the chat flow
+        console.error('Error updating streak:', err);
+      }
+      
       console.log('Checking if message is a plan request');
       const planCheckRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/planner/ask`, {
         method: 'POST',
