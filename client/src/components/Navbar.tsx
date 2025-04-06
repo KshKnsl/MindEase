@@ -89,23 +89,23 @@ const Navbar = () => {
         onClose={() => setIsMobileMenuOpen(false)}
       >
         <List sx={{ width: 250 }}>
-          <ListItem button component={Link} to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+          <ListItem component={Link} to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} sx={{ cursor: 'pointer' }}>
             <ListItemText primary="Dashboard" />
           </ListItem>
-          <ListItem button component={Link} to="/mood-tracker" onClick={() => setIsMobileMenuOpen(false)}>
+          <ListItem component={Link} to="/mood-tracker" onClick={() => setIsMobileMenuOpen(false)} sx={{ cursor: 'pointer' }}>
             <ListItemText primary="Mood Tracker" />
           </ListItem>
           {!isLoggedIn ? (
             <>
-              <ListItem button component={Link} to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+              <ListItem component={Link} to="/register" onClick={() => setIsMobileMenuOpen(false)} sx={{ cursor: 'pointer' }}>
                 <ListItemText primary="Register" />
               </ListItem>
-              <ListItem button component={Link} to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+              <ListItem component={Link} to="/login" onClick={() => setIsMobileMenuOpen(false)} sx={{ cursor: 'pointer' }}>
                 <ListItemText primary="Login" />
               </ListItem>
             </>
           ) : (
-            <ListItem button onClick={handleLogout}>
+            <ListItem onClick={handleLogout} sx={{ cursor: 'pointer' }}>
               <ListItemText primary="Logout" />
             </ListItem>
           )}
