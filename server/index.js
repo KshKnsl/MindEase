@@ -12,6 +12,7 @@ import {router as moodRoutes} from './routes/moodTracker.js';
 import { userRouter } from './routes/user.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import plannerRouter from './routes/Planner.js';
+import streakRouter from './routes/streak.js';
 
 dotenv.config(); 
 
@@ -67,12 +68,36 @@ app.use('/api/mood', (req, res, next) => {
 // Add planner router with proper path prefix
 app.use('/api/planner', plannerRouter);
 
+// Add streak router for tracking user activity
+app.use('/api/user/streak', streakRouter);
+
 app.get('/api/user/data', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
         res.json(user);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching user data' });
+    }
+});
+
+// Add route for user statistics
+app.get('/api/user/stats', auth, async (req, res) => {
+    try {
+        const streakResponse = await fetch(`${req.protocol}://${req.get('host')}/api/user/streak/stats`, {
+            headers: {
+                'Authorization': req.headers.authorization
+            }
+        });
+        
+        if (!streakResponse.ok) {
+            throw new Error('Failed to fetch user statistics');
+        }
+        
+        const stats = await streakResponse.json();
+        res.json(stats);
+    } catch (error) {
+        console.error('Error fetching user stats:', error);
+        res.status(500).json({ error: 'Failed to retrieve user statistics' });
     }
 });
 

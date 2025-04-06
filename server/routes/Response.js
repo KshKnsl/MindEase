@@ -4,7 +4,9 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import { UserProfile } from "../models/UserProfile.js";
 import { User } from "../models/User.js";
+import dotenv from "dotenv";
 
+dotenv.config();
 const router = express.Router();
 
 router.post("/chat", async (req, res) => {
@@ -99,16 +101,13 @@ router.post("/chat", async (req, res) => {
 
     console.log("Prompt:", prompt);
 
-    const aiRes = await fetch(
-      `${import.meta.env.VITE_BACKEND_URL}/api/genai/ask`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt: finalPrompt }),
-      }
-    );
+        const aiRes = await fetch(`${process.env.BACKEND_URL}/api/genai/ask`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt: finalPrompt }),
+        });
 
     if (!aiRes.ok) {
       throw new Error("Failed to fetch AI response");
