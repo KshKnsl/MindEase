@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, User, BarChart2 } from 'lucide-react';
+import { Brain, User, BarChart2, Heart } from 'lucide-react';
 import AIChat from './components/AIChat';
 import UserProfile from './components/UserProfile';
 import MoodActionHandler from './components/MoodTracker';
@@ -124,7 +124,7 @@ const Dashboard = () => {
               activeTab === 'mood' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
             }`}
           >
-            <Brain className="h-5 w-5 mx-auto group-hover:mx-0" />
+            <Heart className="h-5 w-5 mx-auto group-hover:mx-0" />
             <span className="hidden group-hover:inline-block">Mood</span>
           </button>
           
