@@ -71,7 +71,7 @@ const MoodAction: React.FC = () => {
       case "playBreathingAnimation":
         return <BreathingBubble moodColor={moodColor} />;
       case "shakeCountdown":
-        return <ShakeTimer moodColor={moodColor} />;
+        return <GroundingExercise moodColor={moodColor} /> ;
       case "playMusic":
         return (
           <div className={`p-8 rounded-lg ${moodColor.bg} border ${moodColor.border} w-full max-w-2xl mx-auto`}>
@@ -84,7 +84,7 @@ const MoodAction: React.FC = () => {
         );
       case "showQuote":
       default:
-        return <GroundingExercise moodColor={moodColor} />;
+        return <ShakeTimer moodColor={moodColor} />;
     }
   };
 
