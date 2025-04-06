@@ -19,6 +19,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
     const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
     const [allQuestionsCompleted, setAllQuestionsCompleted] = useState(false);
     const [savingProfile, setSavingProfile] = useState(false);
+    const [useDummyAnswers, setUseDummyAnswers] = useState(false);
     
     const presetQuestions = [
         "How would you describe your overall mood most days?",
@@ -31,6 +32,27 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
         "What personal growth areas are most important to you right now?",
         "How do you define success for yourself?",
         "What support systems do you currently have in place?"
+    ];
+
+    const dummyAnswers = [
+        "Generally positive with occasional dips. I tend to be optimistic but have some anxious days, especially mid-week.",
+        "Reading science fiction, hiking in nature, cooking new recipes, and spending quality time with close friends.",
+        "Work deadlines, financial planning, and maintaining a healthy work-life balance are my main stressors.",
+        "I usually try meditation or talking to a friend. Sometimes I isolate myself which isn't always helpful.",
+        "I want to establish a consistent meditation practice and learn to set better boundaries at work.",
+        "Thoughtful, reliable, somewhat reserved initially but warm once you get to know me.",
+        "I notice I feel better when I exercise regularly and worse when I spend too much time on social media.",
+        "Developing emotional resilience and becoming more comfortable with uncertainty.",
+        "Finding balance between achievement and enjoyment, while making a positive impact on others.",
+        "A small group of close friends, my therapist, and some supportive colleagues at work."
+    ];
+
+    const dummyFollowUpAnswers = [
+        "I've been trying journaling lately and it's helping me track my emotional patterns.",
+        "I think my perfectionism often prevents me from celebrating small wins and enjoying the process.",
+        "I'd like to be more present with loved ones instead of always thinking about work.",
+        "My sleep quality definitely affects my mental health - I notice I'm much more anxious when I'm sleep-deprived.",
+        "I hope to develop more self-compassion and not be so critical of myself when I make mistakes."
     ];
 
     const [existingProfile, setExistingProfile] = useState<{responses: UserAnswer[], updatedAt: string} | null>(null);
@@ -63,14 +85,30 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
     }, []);
 
     const handleSubmitAnswer = async () => {
-        if (!currentAnswer.trim()) return;    
+        let answerText = currentAnswer;
+        
+        if (useDummyAnswers) {
+            if (currentQuestionIndex < presetQuestions.length) {
+                answerText = dummyAnswers[currentQuestionIndex];
+            } else {
+                const followUpIndex = currentQuestionIndex - presetQuestions.length;
+                if (followUpIndex < dummyFollowUpAnswers.length) {
+                    answerText = dummyFollowUpAnswers[followUpIndex];
+                }
+            }
+        }
+        
+        // Skip validation check to allow empty answers
         setIsSubmitting(true);
+        
+        // Use a placeholder if answer is empty
+        const finalAnswer = answerText.trim() || "(No answer provided)";
         
         const newAnswers = [...answers, {
             question: currentQuestionIndex < presetQuestions.length 
                 ? presetQuestions[currentQuestionIndex] 
                 : followUpQuestions[currentQuestionIndex - presetQuestions.length],
-            answer: currentAnswer
+            answer: finalAnswer
         }];
         
         setAnswers(newAnswers);
@@ -120,6 +158,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
         }
         
         setIsSubmitting(false);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            // Always allow submission regardless of content
+            handleSubmitAnswer();
+        }
     };
 
     const saveUserProfile = async (completedAnswers: UserAnswer[]) => {
@@ -247,7 +293,23 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
 
     return (
         <div className="max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold text-purple-800 mb-6">Let Me Know You</h2>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-purple-800">Let Me Know You</h2>
+                
+                {/* Demo mode toggle for judges */}
+                <div className="flex items-center">
+                    <input 
+                        type="checkbox" 
+                        id="demoMode" 
+                        checked={useDummyAnswers}
+                        onChange={() => setUseDummyAnswers(!useDummyAnswers)}
+                        className="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500 rounded"
+                    />
+                    <label htmlFor="demoMode" className="text-sm text-gray-600">
+                        Demo Mode (For Judges)
+                    </label>
+                </div>
+            </div>
             
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className="mb-6">
@@ -270,22 +332,23 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
                     <textarea
                         className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent"
                         rows={4}
-                        value={currentAnswer}
+                        value={useDummyAnswers ? 
+                            (currentQuestionIndex < presetQuestions.length ? 
+                                dummyAnswers[currentQuestionIndex] : 
+                                dummyFollowUpAnswers[currentQuestionIndex - presetQuestions.length] || '') : 
+                            currentAnswer}
                         onChange={(e) => setCurrentAnswer(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         placeholder="Your answer..."
                         disabled={isSubmitting}
                     ></textarea>
+                    <p className="text-xs text-gray-500 mt-1">Press Enter to submit your answer. Use Shift+Enter for line breaks.</p>
                 </div>
 
                 <div className="flex justify-end">
                     <button
-                        className={`px-6 py-2 rounded-md ${
-                            currentAnswer.trim() && !isSubmitting
-                                ? 'bg-purple-600 text-white hover:bg-purple-700'
-                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
+                        className="px-6 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700"
                         onClick={handleSubmitAnswer}
-                        disabled={!currentAnswer.trim() || isSubmitting}
                     >
                         {isSubmitting ? 'Submitting...' : currentQuestionIndex === presetQuestions.length + 4 ? 'Complete Profile' : 'Next Question'}
                     </button>
