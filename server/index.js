@@ -8,10 +8,11 @@ import { User } from './models/User.js';
 import { router as authRoutes } from './routes/auth.js';
 import { router as questionRoutes } from './routes/questions.js';
 import {router as responseRoutes} from './routes/Response.js';
-import {router as moodRoutes} from './routes/moodTracker.js';
+import {router as moodRoutes} from './routes/MoodTracker.js';
 import { userRouter } from './routes/user.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import plannerRouter from './routes/Planner.js';
+import streakRouter from './routes/streak.js';
 
 dotenv.config(); 
 
@@ -67,12 +68,60 @@ app.use('/api/mood', (req, res, next) => {
 // Add planner router with proper path prefix
 app.use('/api/planner', plannerRouter);
 
+// Add streak router for tracking user activity
+app.use('/api/user/streak', streakRouter);
+
 app.get('/api/user/data', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
         res.json(user);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching user data' });
+    }
+});
+
+// Add route for user statistics
+app.get('/api/user/stats', auth, async (req, res) => {
+    try {
+        // We'll skip the fetch to a local endpoint and directly implement stats logic here
+        // This avoids internal HTTP calls which can cause issues with environments like Render
+        const Response = (await import('./models/Response.js')).default;
+        
+        // Get total interactions count
+        const totalInteractions = await Response.countDocuments({ userId: req.userId });
+        
+        // Get mood entries count
+        const moodEntries = await Response.countDocuments({ 
+            userId: req.userId,
+            moodTag: { $exists: true, $ne: null }
+        });
+        
+        // Count scheduled events (placeholder for now)
+        const eventsScheduled = 0;
+        
+        // Get streak data if available
+        let streakData = { currentStreak: 0, longestStreak: 0 };
+        try {
+            const { UserStreak } = await import('./models/UserStreak.js');
+            const streak = await UserStreak.findOne({ userId: req.userId });
+            if (streak) {
+                streakData.currentStreak = streak.currentStreak;
+                streakData.longestStreak = streak.longestStreak;
+            }
+        } catch (err) {
+            console.error('Error fetching streak data:', err);
+            // Continue with default streak values
+        }
+        
+        res.json({
+            totalInteractions,
+            moodEntries,
+            eventsScheduled,
+            ...streakData
+        });
+    } catch (error) {
+        console.error('Error fetching user stats:', error);
+        res.status(500).json({ error: 'Failed to retrieve user statistics' });
     }
 });
 
