@@ -115,6 +115,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ userData }) => {
         } else {
             setAllQuestionsCompleted(true);
             await saveUserProfile(newAnswers);
+
+            
         }
         
         setIsSubmitting(false);

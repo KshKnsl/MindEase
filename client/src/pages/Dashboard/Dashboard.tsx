@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Brain, User } from 'lucide-react';
 import AIChat from './components/AIChat';
 import UserProfile from './components/UserProfile';
+import MoodActionHandler from './components/MoodTracker';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string | null>(null);
@@ -115,6 +116,16 @@ const Dashboard = () => {
             <User className="h-5 w-5 mx-auto group-hover:mx-0" />
             <span className="hidden group-hover:inline-block">Let Me Know You</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('mood')}
+            className={`flex items-center space-x-2 p-2 rounded-md w-full ${
+              activeTab === 'mood' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-purple-50'
+            }`}
+          >
+            <Brain className="h-5 w-5 mx-auto group-hover:mx-0" />
+            <span className="hidden group-hover:inline-block">Mood</span>
+          </button>
         </div>
       </div>
 
@@ -132,6 +143,7 @@ const Dashboard = () => {
         >
           {activeTab === 'ai' && <AIChat />}
           {activeTab === 'knowme' && <UserProfile userData={userData} />}
+          {activeTab === 'mood' && <MoodActionHandler />}
         </motion.div>
       </div>
     </div>
