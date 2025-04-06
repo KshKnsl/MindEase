@@ -8,6 +8,7 @@ import { User } from './models/User.js';
 import { router as authRoutes } from './routes/auth.js';
 import { router as questionRoutes } from './routes/questions.js';
 import {router as responseRoutes} from './routes/Response.js';
+import {router as moodRoutes} from './routes/moodTracker.js';
 import { userRouter } from './routes/user.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import plannerRouter from './routes/Planner.js';
@@ -57,6 +58,11 @@ app.use('/api/response', (req, res, next) => {
     console.log('Response route hit');
     next();
 }, responseRoutes);
+
+app.use('/api/mood', (req, res, next) => {
+    console.log('mood route hit');
+    next();
+}, moodRoutes);
 
 // Add planner router with proper path prefix
 app.use('/api/planner', plannerRouter);
