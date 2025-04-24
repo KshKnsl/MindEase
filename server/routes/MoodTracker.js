@@ -47,7 +47,7 @@ router.post("/mood-action", async (req, res) => {
         actionType: "positiveAffirmation"
       },
       sad: {
-        suggestion: "Feeling low? Let’s draw or doodle something simple.",
+        suggestion: "Feeling low? Let's take a moment to reflect on something you're grateful for today. Even the smallest things can lift your mood.",
         actionType: "drawCanvas"
       },
       anxious: {
