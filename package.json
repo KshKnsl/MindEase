@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/KshKnsl/MindEase#readme",
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
     "concurrently": "^9.2.1"
   }
 }
