@@ -18,7 +18,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/planner" element={<Planner />} />
-          <Route path="*" element={<LandingPage />} /> {/* Redirect to LandingPage for any unknown routes */}
+          <Route path="*" element={<LandingPage />} />
         </Routes>
       </div>
     </Router>
