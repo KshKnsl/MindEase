@@ -1,17 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Brain } from 'lucide-react';
-import { Button } from './ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet"; // Updated the path to match the correct location
+import { Brain, Menu, X } from 'lucide-react';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -23,79 +16,129 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
+    setIsMobileMenuOpen(false);
+    
     navigate('/');
   };
 
-  return (
-    <nav className="border-b bg-white">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <Brain className="h-6 w-6 text-purple-600" />
-            <span className="text-xl font-semibold">MindEase</span>
-          </Link>
+  const isActive = (path: string) => location.pathname === path;
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" asChild>
-              <Link to="/dashboard">Dashboard</Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link to="/mood-tracker">Mood Tracker</Link>
-            </Button>
+  return (
+    <nav className="bg-white shadow-md sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center space-x-2 group">
+              <Brain className="h-8 w-8 text-purple-600 group-hover:text-purple-700 transition-colors" />
+              <span className="text-xl font-bold text-gray-900 group-hover:text-purple-700 transition-colors">MindEase</span>
+            </Link>
+          </div>
+
+          {/* Desktop navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            <Link 
+              to="/dashboard" 
+              className={`font-medium transition-colors ${
+                isActive('/dashboard') 
+                  ? 'text-purple-700 border-b-2 border-purple-600' 
+                  : 'text-gray-700 hover:text-purple-600'
+              }`}
+            >
+              Dashboard
+            </Link>
+           
+            
             {!isLoggedIn ? (
               <>
-                <Button variant="ghost" asChild>
-                  <Link to="/register">Register</Link>
-                </Button>
-                <Button variant="default" asChild>
-                  <Link to="/login">Login</Link>
-                </Button>
+                <Link 
+                  to="/register" 
+                  className={`font-medium transition-colors ${
+                    isActive('/register') 
+                      ? 'text-purple-700 border-b-2 border-purple-600' 
+                      : 'text-gray-700 hover:text-purple-600'
+                  }`}
+                >
+                  Register
+                </Link>
+                <Link 
+                  to="/login" 
+                  className="bg-purple-600 text-white px-5 py-2 rounded-md hover:bg-purple-700 transition-colors font-medium shadow-sm hover:shadow-md"
+                >
+                  Login
+                </Link>
               </>
             ) : (
-              <Button variant="ghost" onClick={handleLogout}>
+              <button 
+                onClick={handleLogout}
+                className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
+              >
                 Logout
-              </Button>
+              </button>
             )}
           </div>
 
-          {/* Mobile Menu */}
-          <Sheet>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-col space-y-4 mt-4">
-                <Button variant="ghost" asChild>
-                  <Link to="/dashboard">Dashboard</Link>
-                </Button>
-                <Button variant="ghost" asChild>
-                  <Link to="/mood-tracker">Mood Tracker</Link>
-                </Button>
-                {!isLoggedIn ? (
-                  <>
-                    <Button variant="ghost" asChild>
-                      <Link to="/register">Register</Link>
-                    </Button>
-                    <Button variant="default" asChild>
-                      <Link to="/login">Login</Link>
-                    </Button>
-                  </>
-                ) : (
-                  <Button variant="ghost" onClick={handleLogout}>
-                    Logout
-                  </Button>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-gray-700 hover:text-purple-600 focus:outline-none"
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white px-4 py-2 shadow-lg">
+          <div className="flex flex-col space-y-3 pb-3">
+            <Link 
+              to="/dashboard" 
+              className={`px-2 py-2 rounded-md ${
+                isActive('/dashboard') 
+                  ? 'bg-purple-50 text-purple-700 font-medium' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Dashboard
+            </Link>
+            
+            
+            {!isLoggedIn ? (
+              <>
+                <Link 
+                  to="/register" 
+                  className={`px-2 py-2 rounded-md ${
+                    isActive('/register') 
+                      ? 'bg-purple-50 text-purple-700 font-medium' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Register
+                </Link>
+                <Link 
+                  to="/login" 
+                  className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 text-center"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+              </>
+            ) : (
+              <button 
+                onClick={handleLogout}
+                className="text-left px-2 py-2 text-gray-700 hover:bg-gray-50 rounded-md w-full"
+              >
+                Logout
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

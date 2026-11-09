@@ -2,6 +2,8 @@ import express from 'express';
 import { User } from '../models/User.js';
 import { UserProfile } from '../models/UserProfile.js';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const router = express.Router();
 
@@ -50,7 +52,7 @@ router.post('/profile', async (req, res) => {
        Be kind, warm, and non-judgmental.
        `;
        
-       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/genai/ask`, {
+       const response = await fetch(`${process.env.BACKEND_URL}/api/genai/ask`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
